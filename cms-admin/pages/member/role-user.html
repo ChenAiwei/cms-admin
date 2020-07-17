@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>添加用户</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../css/oksub.css">
+		<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+	</head>
+	<body>
+		<div class="ok-body">
+			<!--form表单-->
+			<div class="layui-form-item">
+				<div id="userList" class="demo-transfer"></div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-input-block">
+					<button class="layui-btn" style="margin-left: 40px;" lay-demotransferactive="getData">立即提交</button>
+					<button type="reset" class="layui-btn layui-btn-primary" lay-demotransferactive="reload">重置</button>
+				</div>
+			</div>
+		</div>
+		<!--js逻辑-->
+		<script src="../../lib/layui/layui.js"></script>
+		<script type="text/javascript">
+			layui.use(["form", "okLayer", "okUtils", "jquery", "transfer", 'util'], function() {
+				let okLayer = layui.okLayer;
+				let okUtils = layui.okUtils;
+				let $ = layui.jquery;
+				let transfer = layui.transfer;
+				let util = layui.util;
+				var id = okUtils.requestParameter().id;
+				var index = parent.layer.getFrameIndex(window.name);
+				okUtils.ajax("/user/listByRole/"+id, "get", null).done(function(response) {
+					transfer.render({
+						elem: '#userList',
+						data: response.shuttleList,
+						title: ['全选', '全选'],
+						showSearch: true,
+						value: response.valueList,
+						id: 'userKey'
+					});
+					util.event('lay-demoTransferActive', {
+						getData: function(othis) {
+							var getData = transfer.getData('userKey'); //获取右侧数据
+							var roleUserIdsDto = new Object();
+							roleUserIdsDto.id = id;
+							roleUserIdsDto.idList = getData;
+							okUtils.ajax("/role/addUser", "post", JSON.stringify(roleUserIdsDto), true).done(function (response) {
+							   parent.layer.close(index); 
+							}).fail(function (error) {
+							    console.log(error);
+							});
+							
+						}
+					});
+					util.event('lay-demoTransferActive', {
+						reload: function(othis) {
+							transfer.render({
+								elem: '#userList',
+								data: response.shuttleList,
+								title: ['全选', '全选'],
+								showSearch: true,
+								id: 'userKey'
+							});
+						}
+					});
+
+				}).fail(function(error) {
+					console.log(error)
+				});
+				okLoading.close();
+			})
+		</script>
+	</body>
+</html>
