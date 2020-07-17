@@ -67,6 +67,7 @@ if (!Object.assign) {
         code: "modules/code",
         jquery: "modules/jquery",
         mobile: "modules/mobile",
+		xmSelect: "modules/xm-select",
         "layui.all": "../layui.all"
     }, okmodules);
     var t = document,
