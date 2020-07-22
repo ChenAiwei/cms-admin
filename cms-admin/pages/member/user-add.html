@@ -56,7 +56,7 @@
 				<div class="layui-form-item">
 					<label class="layui-form-label">状态</label>
 					<div class="layui-input-block">
-						<input type="checkbox" name="status" lay-skin="switch" lay-text="启用|停用" checked value="0">
+						<input type="checkbox" name="status" lay-skin="switch" lay-text="启用|停用">
 					</div>
 				</div>
 				<div class="layui-form-item">
@@ -124,8 +124,8 @@
 						selectRoleIds.push(val.value);
 					});
 					userInfo.roleIdLits = selectRoleIds;
+					userInfo.status = (userInfo.status == 'on' ? "1":"0");
 					okUtils.ajax("/user/addUser", "post",JSON.stringify(userInfo), true).done(function(response) {
-						console.log(response);
 						okLayer.greenTickMsg("添加成功", function() {
 							parent.layer.close(parent.layer.getFrameIndex(window.name));
 						});
