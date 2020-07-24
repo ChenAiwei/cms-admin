@@ -32,10 +32,10 @@
 			</form>
 	</div>-->
 	<div class="layui-row">
-		<div class="layui-col-md3">
+		<div class="layui-col-md2">
 			<div id="permissionTree"></div>
 		</div>
-		<div class="layui-col-md9">
+		<div class="layui-col-md10">
 			<table class="layui-hide" id="permissionTable" lay-filter="tableFilter"></table>
 		</div>
 	</div>
@@ -43,54 +43,58 @@
 <!--js逻辑-->
 <script src="../../lib/layui/layui.js"></script>
 <script>
-	layui.use(["element", "table", "laydate", "tree", "okUtils", "okMock"], function () {
+	layui.use(["element", "table", "laydate", "tree", "okUtils", "okMock","jquery"], function () {
 		let table = layui.table;
 		let laydate = layui.laydate;
 		let tree = layui.tree;
 		let okUtils = layui.okUtils;
 		let okMock = layui.okMock;
+		let $ = layui.jquery;
 		okLoading.close();
 		laydate.render({elem: '#startTime', type: "datetime"});
 		laydate.render({elem: '#endTime', type: "datetime"});
 
 		function initPermissionTree() {
-			okUtils.ajax("/permission/tree", "get", null, true).done(function (response) {
+			okUtils.ajax("/auth/info/tree", "get", null, true).done(function (response) {
 				tree.render({
 					elem: '#permissionTree',
-					data: response.data,
-					showCheckbox: true,
-					id: 'demoId1',
-					isJump: true,
+					data: response,
+					onlyIconControl: true,
 					click: function (obj) {
 						var data = obj.data;
-						layer.msg('状态：' + obj.state + '<br>节点数据：' + JSON.stringify(data));
+						var list = [];
+						data.sort = '';
+						list.push(data);
+						$.each(data.children,function(i,val){
+							list.push(val);
+						});
+						initPermissionTable(list);
 					}
 				});
-
-				initPermissionTable();
+				initPermissionTable(response);
 			}).fail(function (error) {
 				console.log(error)
 			});
 		}
 
-		function initPermissionTable() {
+		function initPermissionTable(response) {
 			table.render({
 				elem: '#permissionTable',
-				url: okMock.api.permission.list,
-				limit: 20,
-				page: true,
 				size: "sm",
 				cols: [[
 					{field: "id", title: "ID", width: 170, sort: true, fixed: "left"},
-					{field: "name", title: "权限名称", width: 100},
+					{field: "title", title: "权限名称", width: 100},
 					{field: "permit", title: "权限标识", width: 150},
-					{field: "url", title: "权限路径", width: 150},
-					{field: "parentName", title: "父菜单", width: 100},
-					{field: "type", title: "类型", width: 100, templet: "#typeTpl"},
+					{field: "href", title: "权限路径", width: 150},
+					{field: "sort", title: "排序", width: 100},
+					{field: "icon", title: "图标", width: 100,align: "center",templet: "#iconTpl"},
+					{field: "status", title: "状态", width: 100,align: "center",templet: "#statusTpl"},
+					{field: "menuType", title: "类型", width: 100,align: "center",templet: "#typeTpl"},
 					{field: "createTime", title: "创建时间", width: 150},
-					{field: "updateTime", title: "创建时间", width: 150},
+					{field: "updateTime", title: "修改时间", width: 150},
 					{title: "操作", width: 100, templet: "#operationTpl", align: "center", fixed: "right"}
 				]],
+				data: response,
 				done: function (res, curr, count) {
 					console.info(res, curr, count);
 				}
@@ -106,12 +110,24 @@
 	<a href="javascript:" title="删除" lay-event="del"><i class="layui-icon">&#xe640;</i></a>
 </script>
 
+<script type="text/html" id="iconTpl">
+	<i class="layui-icon">{{d.icon}}</i>
+</script>
+
+<script type="text/html" id="statusTpl">
+	{{#  if(d.status == 0){ }}
+	<span class="layui-btn layui-btn-normal layui-btn-xs">已停用</span>
+	{{#  } else if(d.status == 1) { }}
+	<span class="layui-btn layui-btn-warm layui-btn-xs">已启用</span>
+	{{#  } }}
+</script>
+
 <script type="text/html" id="typeTpl">
-	{{#  if(d.type == 0){ }}
+	{{#  if(d.menuType == 0){ }}
 	<span class="layui-btn layui-btn-normal layui-btn-xs">目录</span>
-	{{#  } else if(d.type == 1){ }}
+	{{#  } else if(d.menuType == 1){ }}
 	<span class="layui-btn layui-btn-warm layui-btn-xs">菜单</span>
-	{{#  } else if(d.type == 2) { }}
+	{{#  } else if(d.menuType == 2) { }}
 	<span class="layui-btn layui-btn-danger layui-btn-xs">按钮</span>
 	{{#  } }}
 </script>

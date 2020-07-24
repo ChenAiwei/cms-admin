@@ -75,7 +75,6 @@
 				{title: "操作", width: 100, align: "center", fixed: "right", templet: "#operationTpl"}
 			]],
 			done: function (res, curr, count) {
-				console.info(res, curr, count);
 				if("Invalid token"==res.msg){
 					parent.location.href = "../../../cms-admin/pages/login.html";
 				}
@@ -124,9 +123,15 @@
 				layer.close(index);
 				let idsStr = okUtils.tableBatchCheck(table);
 				if (idsStr) {
-					okUtils.ajax("/user/normalUser", "put", {idsStr: idsStr}, true).done(function (response) {
-						console.log(response);
-						okUtils.tableSuccessMsg(response.msg);
+					let uidList = [];
+					let userStatusVo = {};
+					$.each(idsStr.split(','),function(i,v){
+						uidList.push(v);
+					});
+					userStatusVo.uidList = uidList;
+					userStatusVo.type = 1;
+					okUtils.ajax("/user/userStatus", "post", JSON.stringify(userStatusVo), true).done(function (response) {
+						okUtils.tableSuccessMsg("启用成功");
 					}).fail(function (error) {
 						console.log(error)
 					});
@@ -139,9 +144,15 @@
 				layer.close(index);
 				let idsStr = okUtils.tableBatchCheck(table);
 				if (idsStr) {
-					okUtils.ajax("/user/stopUser", "put", {idsStr: idsStr}, true).done(function (response) {
-						console.log(response);
-						okUtils.tableSuccessMsg(response.msg);
+					let uidList = [];
+					let userStatusVo = {};
+					$.each(idsStr.split(','),function(i,v){
+						uidList.push(v);
+					});
+					userStatusVo.uidList = uidList;
+					userStatusVo.type = 0;
+					okUtils.ajax("/user/userStatus", "post", JSON.stringify(userStatusVo), true).done(function (response) {
+						okUtils.tableSuccessMsg("停用成功");
 					}).fail(function (error) {
 						console.log(error)
 					});
@@ -154,9 +165,12 @@
 				layer.close(index);
 				let idsStr = okUtils.tableBatchCheck(table);
 				if (idsStr) {
-					okUtils.ajax("/user/deleteUser", "delete", {idsStr: idsStr}, true).done(function (response) {
-						console.log(response);
-						okUtils.tableSuccessMsg(response.msg);
+					let idList = [];
+					$.each(idsStr.split(','),function(i,v){
+						idList.push(v);
+					});
+					okUtils.ajax("/user/delUser", "post", JSON.stringify(idList), true).done(function (response) {
+						okUtils.tableSuccessMsg("删除成功");
 					}).fail(function (error) {
 						console.log(error)
 					});
@@ -178,9 +192,10 @@
 
 		function del(id) {
 			okLayer.confirm("确定要删除吗？", function () {
-				okUtils.ajax("/user/deleteUser", "delete", {idsStr: id}, true).done(function (response) {
-					console.log(response);
-					okUtils.tableSuccessMsg(response.msg);
+				let idList = [];
+				idList.push(id);
+				okUtils.ajax("/user/delUser", "post",JSON.stringify(idList), true).done(function (response) {
+					okUtils.tableSuccessMsg("删除成功");
 				}).fail(function (error) {
 					console.log(error)
 				});

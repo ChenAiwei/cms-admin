@@ -67,7 +67,6 @@
 				{title: "操作", width: 150, align: "center", templet: "#operationTpl"}
 			]],
 			done: function (res, curr, count) {
-				console.log(res, curr, count);
 				if("Invalid token"==res.msg){
 					parent.location.href = "../../../cms-admin/pages/login.html";
 				}
@@ -79,7 +78,6 @@
 				where: data.field,
 				page: {curr: 1}
 			});
-			console.log("0000")
 			return false;
 		});
 
