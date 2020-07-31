@@ -21,12 +21,13 @@
 		<!--js逻辑-->
 		<script src="../../lib/layui/layui.js"></script>
 		<script>
-			layui.use(["element", "table", "laydate", "tree", "okUtils", "okMock","jquery"], function () {
+			layui.use(["element", "table", "laydate", "tree", "okUtils", "okMock","jquery", "okLayer"], function () {
 		let table = layui.table;
 		let laydate = layui.laydate;
 		let tree = layui.tree;
 		let okUtils = layui.okUtils;
 		let okMock = layui.okMock;
+		let okLayer = layui.okLayer;
 		let $ = layui.jquery;
 		
 		function initPermissionTree() {
@@ -52,7 +53,7 @@
 				cols: [[
 					{field: "id", title: "ID", width: 170,fixed: "left"},
 					{field: "title", title: "权限名称", width: 100},
-					{field: "permit", title: "权限标识", width: 150},
+					{field: "tag", title: "权限标识", width: 150},
 					{field: "href", title: "权限路径", width: 150},
 					{field: "sort", title: "排序", sort: true, width: 100},
 					{field: "icon", title: "图标", width: 100,align: "center",templet: "#iconTpl"},
@@ -75,7 +76,7 @@
 			let data = obj.data;
 			switch (obj.event) {
 				case "add":
-					add();
+					add(data.id);
 					break;
 				case "edit":
 					edit(data.id);
@@ -96,20 +97,33 @@
 			return list;
 		}
 		
-		function add(){
-			
+		function add(id){
+			okLayer.open("添加菜单", "permission-add.html?pid="+id, "70%", "70%", null, function () {
+				initPermissionTree();
+			})
 		}
 		function edit(id){
 			if(null == id){
 				layer.msg('当前节点不可编辑!');
 				return;
 			}
+			okLayer.open("编辑菜单", "permission-edit.html?id="+id, "70%", "70%", null, function () {
+				initPermissionTree();
+			})
 		}
 		function del(id){
 			if(null == id){
 				layer.msg('当前节点不可删除!');
 				return;
 			}
+			okLayer.confirm("确定要删除吗？", function () {
+				okUtils.ajax("/auth/info/del/"+id, "get", null).done(function (response) {
+					 layer.msg("删除成功", {icon: 1, time: 1000},null);
+					initPermissionTree();
+				}).fail(function (error) {
+					console.log(error)
+				});
+			})
 		}
 	});
 </script>

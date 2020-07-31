@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>添加权限</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../css/oksub.css">
+		<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+	</head>
+	<body>
+		<div class="ok-body">
+			<!--form表单-->
+			<form class="layui-form layui-form-pane ok-form">
+				<div class="layui-form-item">
+					<label class="layui-form-label">权限名称</label>
+					<div class="layui-input-block">
+						<input type="text" name="name" placeholder="权限名" autocomplete="off" class="layui-input" lay-verify="required">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">权限标识</label>
+					<div class="layui-input-block">
+						<input type="text" name="tag" placeholder="权限标识" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">权限路径</label>
+					<div class="layui-input-block">
+						<input type="text" name="href" placeholder="请输入权限路径" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">排序</label>
+					<div class="layui-input-block">
+						<input type="text" name="sort" placeholder="请输入排序" autocomplete="off" class="layui-input" onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}" onafterpaste="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}" lay-verify="required">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">图标</label>
+					<div class="layui-input-block">
+						<input type="text" name="icon" placeholder="请输入图标" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">状态</label>
+					<div class="layui-input-block">
+						<input type="checkbox" name="status" lay-skin="switch" lay-text="启用|停用" checked="checked">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">类型</label>
+					<div class="layui-input-block">
+						<select name="menuType" lay-verify="required">
+						  <option value="">请选择一个类型</option>
+						  <option value="0">目录</option>
+						  <option value="1">菜单</option>
+						  <option value="2">按钮</option>
+						</select>    
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<div class="layui-input-block">
+						<button class="layui-btn" lay-submit lay-filter="add">立即提交</button>
+						<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		<!--js逻辑-->
+		<script src="../../lib/layui/layui.js"></script>
+		<script>
+			layui.use(["element", "form", "laydate", "okLayer", "okUtils", "xmSelect",'jquery'], function() {
+				let form = layui.form;
+				let laydate = layui.laydate;
+				let okLayer = layui.okLayer;
+				let okUtils = layui.okUtils;
+				let xmSelect = layui.xmSelect;
+				let $ = layui.jquery;
+				var pid = okUtils.requestParameter().pid;
+				okLoading.close();
+				form.on("submit(add)", function(data) {
+					var formData = data.field;
+					formData['pid'] = (pid == 'null'?'':pid);
+					formData.status = (formData.status == 'on'?1:0);
+					okUtils.ajax("/auth/info/add", "post",JSON.stringify(formData), true).done(function(response) {
+						okLayer.greenTickMsg("添加成功", function() {
+							parent.layer.close(parent.layer.getFrameIndex(window.name));
+						});
+					}).fail(function(error) {
+						console.log(error)
+					});
+					return false;
+				});
+			});
+		</script>
+	</body>
+</html>

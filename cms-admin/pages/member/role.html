@@ -34,7 +34,6 @@
 		let okUtils = layui.okUtils;
 		let okMock = layui.okMock;
 		let $ = layui.jquery;
-		okLoading.close();
 		laydate.render({elem: "#startTime", type: "datetime"});
 		laydate.render({elem: "#endTime", type: "datetime"});
 
@@ -72,7 +71,7 @@
 				}
 			}
 		});
-
+		okLoading.close();
 		form.on("submit(search)", function (data) {
 			roleTable.reload({
 				where: data.field,

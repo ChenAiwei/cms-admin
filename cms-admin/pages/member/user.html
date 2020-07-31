@@ -37,7 +37,6 @@
 
 		laydate.render({elem: "#startTime", type: "datetime"});
 		laydate.render({elem: "#endTime", type: "datetime"});
-		okLoading.close($);
 		let userTable = table.render({
 			elem: '#tableId',
 			url: okUtils.baseUrl+'/user/listUser',
@@ -80,7 +79,7 @@
 				}
 			}
 		});
-
+		okLoading.close($);
 		form.on("submit(search)", function (data) {
 			userTable.reload({
 				where: data.field,

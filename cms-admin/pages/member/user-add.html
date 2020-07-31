@@ -56,7 +56,7 @@
 				<div class="layui-form-item">
 					<label class="layui-form-label">状态</label>
 					<div class="layui-input-block">
-						<input type="checkbox" name="status" lay-skin="switch" lay-text="启用|停用">
+						<input type="checkbox" name="status" lay-skin="switch" lay-text="启用|停用" checked="checked">
 					</div>
 				</div>
 				<div class="layui-form-item">
@@ -85,7 +85,6 @@
 				let xmSelect = layui.xmSelect;
 				let $ = layui.jquery;
 				
-				okLoading.close();
 				laydate.render({
 					elem: "#birthday",
 					type: "datetime"
@@ -115,6 +114,7 @@
 				}).fail(function(error) {
 					console.log(error)
 				});
+				okLoading.close();
 
 				form.on("submit(add)", function(data) {
 					var selectArr = rolesBox.getValue();
