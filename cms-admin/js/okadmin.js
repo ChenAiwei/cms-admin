@@ -308,7 +308,13 @@ layui.use(["element", "form", "layer", "okUtils", "okTab", "okLayer", "okContext
       okLayer.confirm("确定要退出吗？", function (index) {
          okTab.removeTabStorage(function (res) {
             okTab.removeTabStorage();
-            window.location = "pages/login.html";
+			okUtils.ajax("/logout/"+$.cookie("userId"), "get", null).done(function (response) {
+				 $.removeCookie("userId",{path: "/"});
+				 $.removeCookie("token",{path: "/"});
+			     window.location = "pages/login.html";
+			}).fail(function (error) {
+			    console.log(error)
+			}); 
          });
       });
    });
@@ -378,8 +384,13 @@ layui.use(["element", "form", "layer", "okUtils", "okTab", "okLayer", "okContext
 
       //退出登录
       $("#lockQuit").click(function () {
-         // window.location.href = "./pages/login.html";
-         window.location.replace("./pages/login.html");  //替换当前页面
+         okUtils.ajax("/logout/"+$.cookie("userId"), "get", null).done(function (response) {
+         	 $.removeCookie("userId",{path: "/"});
+         	 $.removeCookie("token",{path: "/"});
+              window.location = "pages/login.html";
+         }).fail(function (error) {
+             console.log(error)
+         }); 
       });
    }
 });
