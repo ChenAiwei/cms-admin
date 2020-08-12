@@ -1,20 +1,16 @@
-layui.use(['form', 'layer'], function () {
+layui.use(['form', 'layer','okUtils'], function () {
 	var form = layui.form,
 		layer = layui.layer,
 		$ = layui.jquery,
 		$form = $('form');
-	okLoading.close();
+		let okUtils = layui.okUtils;
+		okLoading.close();
 	//添加验证规则verify
 	form.verify({
 		pass: [
 			/^[\S]{6,16}$/
 			, '密码必须6到16位，且不能出现空格'
 		],
-		oldPwd: function (value, item) {
-			if (value != "123456") {
-				return "密码错误，请重新输入！";
-			}
-		},
 		confirmPwd: function (value, item) {
 			if (!new RegExp($("#oldPwd").val()).test(value)) {
 				return "两次输入密码不一致，请重新输入！";
@@ -22,7 +18,20 @@ layui.use(['form', 'layer'], function () {
 		},
 
 	});
-
+	var userPwd = new Vue({
+			el:'#userPwd-app',
+			data:{
+				user:{
+					userId: $.cookie("userId"),
+					userName: $.cookie("userName"),
+					oldPwd:'',
+					newPwd:'',
+					confirmPwd:''
+				}
+			},
+			methods: {
+			}
+		 });
 	//修改密码
 	form.on("submit(changePwd)", function (data) {
 		var index = layer.msg('提交中，请稍候', {icon: 16, time: false, shade: 0.8});

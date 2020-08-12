@@ -311,6 +311,8 @@ layui.use(["element", "form", "layer", "okUtils", "okTab", "okLayer", "okContext
 			okUtils.ajax("/logout/"+$.cookie("userId"), "get", null).done(function (response) {
 				 $.removeCookie("userId",{path: "/"});
 				 $.removeCookie("token",{path: "/"});
+				 $.removeCookie("userName",{path: "/"});
+				 $.removeCookie("avatar",{path: "/"});
 			     window.location = "pages/login.html";
 			}).fail(function (error) {
 			    console.log(error)
@@ -387,10 +389,12 @@ layui.use(["element", "form", "layer", "okUtils", "okTab", "okLayer", "okContext
          okUtils.ajax("/logout/"+$.cookie("userId"), "get", null).done(function (response) {
          	 $.removeCookie("userId",{path: "/"});
          	 $.removeCookie("token",{path: "/"});
+			 $.removeCookie("userName",{path: "/"});
+			 $.removeCookie("avatar",{path: "/"});
               window.location = "pages/login.html";
          }).fail(function (error) {
              console.log(error)
          }); 
-      });
+      });	
    }
 });

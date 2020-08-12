@@ -441,9 +441,9 @@ layui.define(["element", "jquery", "okUtils", "okCookie"], function(exports) {
 			}
 			setTimeout(function() {
 				$(_this).removeClass("refreshThis");
-			}, 2000)
+			}, 500)
 		} else {
-			layer.msg("客官请不要频繁点击哦！我会反应不过来的");
+			/* layer.msg("客官请不要频繁点击哦！我会反应不过来的"); */
 		}
 	};
 

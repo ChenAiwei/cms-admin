@@ -73,6 +73,14 @@
 				okUtils.ajax("/login", "post", JSON.stringify(data.field)).done(function (response) {
 					$.cookie("userId", response.userId, {path: "/"});
 					$.cookie("token", response.token, {path: "/"});
+					$.cookie("userName", response.userName, {path: "/"});
+					$.cookie("avatar", response.avatar, {path: "/"});
+					var colors = [
+					    "#31bc9f", "#33cc70", "#4a94db", "#9b5fb6", "#34495e", "#16a085", "#27ae60", "#2980b9", "#8e44ad", "#2c3e50",
+					    "#f1cb1e", "#e6761b", "#e7363b", "#00bcd4", "#95a5a6", "#f39c12", "#d35400", "#c0392b", "#bdc3c7", "#7f8c8d"
+					];
+					var avatarColor = colors[Math.floor((Math.random()*colors.length))];
+					okUtils.local("avatarColor",avatarColor);
 					window.location = "../index.html";
 				}).fail(function (error) {
 				    console.log(error)

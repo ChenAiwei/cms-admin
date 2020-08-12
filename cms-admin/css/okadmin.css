@@ -334,7 +334,12 @@
     position: static !important;
     padding-right: 10px;
 }
-
+.ok-left .layui-nav-img{
+	width: 75px;
+	    height: 75px;
+	    margin-bottom: 10px;
+	    border-radius: 50%;
+}
 /*第三级菜单及其一下的缩进样式*/
 #navBar .layui-nav-child .layui-nav-child > dd > a {
     padding-left: 65px;
@@ -354,6 +359,7 @@
     width: 200px;
     height: 120px;
     padding: 15px 0 5px;
+	text-align: center;
 }
 
 .ok-left .user-photo a.img {
