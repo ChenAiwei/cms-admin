@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>充值</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../css/oksub.css">
+		<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+	</head>
+	<body>
+		<div class="ok-body">
+			<!--form表单-->
+			<form class="layui-form layui-form-pane ok-form" lay-filter="filter">
+				<div class="layui-form-item">
+					<label class="layui-form-label">会员名</label>
+					<div class="layui-input-block">
+						<input type="text" name="name" readonly autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">当前余额</label>
+					<div class="layui-input-block">
+						<input type="text" name="balance" readonly autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">充值金额</label>
+					<div class="layui-input-block">
+						<input type="text" name="quota" placeholder="请输入充值金额" autocomplete="off" class="layui-input" lay-verify="required" onkeyup="value=value.replace(/^\D*(\d*(?:\.\d{0,2})?).*$/g, '$1')">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">到账金额</label>
+					<div class="layui-input-block">
+						<input type="text" name="actQuota" placeholder="请输入到账金额" autocomplete="off" lay-verify="required" class="layui-input" onkeyup="value=value.replace(/^\D*(\d*(?:\.\d{0,2})?).*$/g, '$1')">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">备注</label>
+					<div class="layui-input-block">
+						<input type="text" name="chargeRemark" placeholder="" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">充值方式</label>
+					<div class="layui-input-block">
+						<input type="radio" name="payType" value="1" title="微信" checked>
+						<input type="radio" name="payType" value="2" title="支付宝">
+						<input type="radio" name="payType" value="3" title="现金">
+						<input type="radio" name="payType" value="4" title="其他">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<div class="layui-input-block">
+						<button class="layui-btn" lay-submit lay-filter="add">立即充值</button>
+						<button type="button" class="layui-btn layui-btn-primary" id="cancle">取消</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		<!--js逻辑-->
+		<script src="../../lib/layui/layui.js"></script>
+		<script>
+			layui.use(["element", "form", "okLayer", "okUtils", 'jquery'], function() {
+				let form = layui.form;
+				let okLayer = layui.okLayer;
+				let okUtils = layui.okUtils;
+				let $ = layui.jquery;
+				var id = okUtils.requestParameter().id;
+				okUtils.ajax("/member/getMember?id="+id, "get", null).done(function(response) {
+					response.status = (response.status == '0' ? false:true);
+					form.val("filter", response);
+				}).fail(function(error) {
+					console.log(error)
+					parent.layer.close(parent.layer.getFrameIndex(window.name));
+				});
+				okLoading.close();
+				
+				$("#cancle").click(function(){
+					parent.layer.close(parent.layer.getFrameIndex(window.name));
+				})
+				
+				form.on("submit(add)", function(data) {
+					var chargeInfo = data.field;
+					chargeInfo.id = id;
+					okUtils.ajax("/member/charge", "post",JSON.stringify(chargeInfo), true).done(function(response) {
+						okLayer.greenTickMsg("充值成功", function() {
+							parent.layer.close(parent.layer.getFrameIndex(window.name));
+						});
+					}).fail(function(error) {
+						console.log(error)
+					});
+					return false;
+				});
+				
+			});
+		</script>
+	</body>
+</html>

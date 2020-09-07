@@ -116,8 +116,8 @@
 			okLayer.confirm("确定要批量删除吗？", function (index) {
 				layer.close(index);
 				let idsStr = okUtils.tableBatchCheck(table);
-				var list = idsStr.split(",");
 				if (idsStr) {
+					var list = idsStr.split(",");
 					okUtils.ajax("/role/deleteRole", "post",JSON.stringify(list), true).done(function (response) {
 						okUtils.tableSuccessMsg("删除成功");
 					}).fail(function (error) {
@@ -155,16 +155,16 @@
 <!-- 头工具栏模板 -->
 <script type="text/html" id="toolbarTpl">
 	<div class="layui-btn-container">
-		<div class="layui-inline" lay-event="add"><i class="layui-icon layui-icon-add-1"></i></div>
-		<div class="layui-inline" lay-event="batchDel"><i class="layui-icon layui-icon-delete"></i></div>
+		<button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="add">添加角色</button>
+		<button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="batchDel">批量删除</button>
 	</div>
 </script>
 <!-- 行工具栏模板 -->
 <script type="text/html" id="statusTpl">
 	{{#  if(d.status == 1){ }}
-	<span class="layui-btn layui-btn-normal layui-btn-xs">启用</span>
+	<span class="layui-btn layui-btn-normal layui-btn-xs">已启用</span>
 	{{#  } else if(d.status == 1) { }}
-	<span class="layui-btn layui-btn-warm layui-btn-xs">停用</span>
+	<span class="layui-btn layui-btn-warm layui-btn-xs">已停用</span>
 	{{#  } }}
 </script>
 

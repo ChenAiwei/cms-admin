@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>编辑会员</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/oksub.css">
+	<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+</head>
+<body>
+<div class="ok-body">
+	<!--form表单-->
+	<form class="layui-form layui-form-pane ok-form" lay-filter="filter">
+		<div class="layui-form-item">
+			<label class="layui-form-label">会员名</label>
+			<div class="layui-input-block">
+				<input type="text" name="name" placeholder="请输入会员名" autocomplete="off" class="layui-input" lay-verify="required">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">手机号码</label>
+			<div class="layui-input-block">
+				<input type="text" name="phone" placeholder="请输入手机号码" autocomplete="off" class="layui-input" lay-verify="required" onkeyup="value=value.replace(/[^\d]/g,'').replace(/^0{1,}/g,'')">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">余额</label>
+			<div class="layui-input-block">
+				<input type="text" name="balance" placeholder="请输入余额" autocomplete="off" class="layui-input" onkeyup="value=value.replace(/^\D*(\d*(?:\.\d{0,2})?).*$/g, '$1')">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">备注</label>
+			<div class="layui-input-block">
+				<input type="text" name="remark" placeholder="" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		
+		<div class="layui-form-item">
+			<label class="layui-form-label">状态</label>
+			<div class="layui-input-block">
+				<input type="checkbox" name="status" lay-skin="switch" lay-text="正常|过期" checked="checked">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">性别</label>
+			<div class="layui-input-block">
+				<input type="radio" name="sex" value="0" title="男">
+				<input type="radio" name="sex" value="1" title="女" checked>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn" lay-submit lay-filter="edit">立即提交</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</div>
+	</form>
+</div>
+<!--js逻辑-->
+<script src="../../lib/layui/layui.js"></script>
+<script>
+	layui.use(['element', 'form', 'jquery',"okUtils","tree","okLayer"], function () {
+		var element = layui.element;
+		var form = layui.form;
+		var $ = layui.jquery;
+		var okUtils = layui.okUtils;
+		let okLayer = layui.okLayer;
+		var id = okUtils.requestParameter().id;
+		
+		okUtils.ajax("/member/getMember?id="+id, "get", null).done(function(response) {
+			response.status = (response.status == '0' ? false:true);
+			form.val("filter", response);
+		}).fail(function(error) {
+			console.log(error)
+			parent.layer.close(parent.layer.getFrameIndex(window.name));
+		});
+		okLoading.close();
+		form.on("submit(edit)", function(data) {
+			var memberInfo = data.field;
+			memberInfo.id = id;
+			memberInfo.status = (memberInfo.status == 'on' ? "1":"0");
+			okUtils.ajax("/member/editMember", "post",JSON.stringify(memberInfo), true).done(function(response) {
+				okLayer.greenTickMsg("编辑成功", function() {
+					parent.layer.close(parent.layer.getFrameIndex(window.name));
+				});
+			}).fail(function(error) {
+				console.log(error)
+			});
+			return false;
+		});
+	})
+</script>
+</body>
+</html>
