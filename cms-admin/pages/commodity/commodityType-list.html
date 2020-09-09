@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<title>账单记录</title>
+		<title>商品类型</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 		<link rel="stylesheet" href="../../css/oksub.css">
 		<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
@@ -12,28 +12,18 @@
 			<!--模糊搜索区域-->
 			<form class="layui-form ok-search-form">
 				<div class="layui-form-item">
-					<div class="layui-inline" id="memberName-div">
-						<div class="layui-input-inline">
-							<input class="layui-input" placeholder="请输入会员名/会员号/手机号" autocomplete="off" name="memberName">
-						</div>
-					</div>
 					<div class="layui-inline">
 						<div class="layui-input-inline">
-							<input class="layui-input" placeholder="开始日期" autocomplete="off" id="startTime" name="startTime">
-						</div>
-					</div>
-					<div class="layui-inline">
-						<div class="layui-input-inline">
-							<input class="layui-input" placeholder="截止日期" autocomplete="off" id="endTime" name="endTime">
-
+							<input class="layui-input" placeholder="请输入商品类型" autocomplete="off" name="name">
 						</div>
 					</div>
 					<div class="layui-inline">
 						<div class="layui-input-inline">
 							<select class="layui-input" name="type" lay-filter="">
 								<option value="">类型</option>
-								<option value="1">充值</option>
-								<option value="2">消费</option>
+								<option value="1">猫</option>
+								<option value="2">狗</option>
+								<option value="3">其他</option>
 							</select>
 						</div>
 					</div>
@@ -63,24 +53,9 @@
 		let okMock = layui.okMock;
 		let $ = layui.jquery;
 		
-		laydate.render({
-			elem: "#startTime",
-			type: "datetime"
-		});
-		laydate.render({
-			elem: "#endTime",
-			type: "datetime"
-		});
-		
-		var id = okUtils.requestParameter().id;
-		if(id != undefined){
-			$("#memberName-div").attr("style","display:none;");
-		}else{
-			$("#memberName-div").attr("style","display:block;");
-		}
-		let recordTable = table.render({
+		let commdityTypeTable = table.render({
 			elem: "#tableId",
-			url: okUtils.baseUrl+'/member/queryRecord?id='+id,
+			url: okUtils.baseUrl+'/commodity/type/list',
 			headers: {
 			    "userId": $.cookie("userId"),
 				"token": $.cookie("token")
@@ -98,57 +73,91 @@
 			toolbar: "#toolbarTpl",
 			size: "lg",
 			cols: [[
-				{field: "orderNum", title: "订单号", width: 200},
-				{field: "memberName", title: "会员", width: 150},
-				{field: "balance", title: "余额", width: 100,align: "center",sort: true},
-				{field: "beforeBalance", title: "上一次余额", width: 100,align: "center"},
-				{field: "type", title: "类型", width: 100,align: "center",templet:"#typeTpl"},
-				{field: "quota", title: "额度", width: 100,align: "center",sort: true},
-				{field: "actQuota", title: "实际额度", width: 100,align: "center"},	
-				{field: "payType", title: "支付方式", width: 100,align: "center",templet:"#payTypeTpl"},
-				{field: "createTime", title: "生成时间", width: 180},
-				{field: "remark", title: "备注", width: 200}
+				{field: "id", title: "ID", width: 80, sort: true,hide: true},
+				{field: "name", title: "商品类型名", width: 300,align: "center"},
+				{field: "type", title: "宠物类型", width: 200,align: "center",templet:"#typeTpl",sort:true},
+				{title: "操作", width: 150, align: "center", templet: "#operationTpl"}
+				
 			]],
 			done: function (res, curr, count) {
 				if("Invalid token"==res.msg){
-					if(id != undefined){
-						layer.msg("会话过期，请刷新页面重新登录！")
-					}else{
-						parent.location.href = "../../../cms-admin/pages/login.html";
-					}
+					parent.location.href = "../../../cms-admin/pages/login.html";
 				}
 			}
 		});
 		okLoading.close();
 		form.on("submit(search)", function (data) {
-			recordTable.reload({
+			commdityTypeTable.reload({
 				where: data.field,
 				page: {curr: 1}
 			});
 			return false;
 		});
+		
+		table.on("toolbar(tableFilter)", function (obj) {
+			switch (obj.event) {
+				case "add":
+					add();
+					break;
+			}
+		});
+		table.on("tool(tableFilter)", function (obj) {
+			let data = obj.data;
+			switch (obj.event) {
+				case "edit":
+					edit(data.id);
+					break;
+				case "del":
+					del(data.id);
+					break;
+			}
+		});
+		
 	
+		function add() {
+			okLayer.open("添加类型", "type-add.html", "25%", "40%", null, function () {
+				commdityTypeTable.reload();
+			})
+		}
+	
+		function edit(id) {
+			okLayer.open("更新类型", "type-edit.html?id=" + id, "25%", "40%", null, function () {
+				commdityTypeTable.reload();
+			})
+		}
+		
+		function del(id) {
+			okLayer.confirm("确定要删除吗？", function () {
+				okUtils.ajax("/commodity/type/delete?id="+id, "get",null, true).done(function (response) {
+					okUtils.tableSuccessMsg("删除成功");
+				}).fail(function (error) {
+					console.log(error)
+				});
+			})
+		}
 	})
+</script>
+<!-- 头工具栏模板 -->
+<script type="text/html" id="toolbarTpl">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-sm" lay-event="add">添加类型</button>
+	</div>
 </script>
 
 <script type="text/html" id="typeTpl">
 	{{#  if(d.type == 1){ }}
-	<span class="layui-btn layui-btn-normal layui-btn-xs">充值</span>
+	<span>猫</span>
 	{{#  } else if(d.type == 2) { }}
-	<span class="layui-btn layui-btn-warm layui-btn-xs">消费</span>
+	<span>狗</span>
+	{{#  } else if(d.type == 3) { }}
+	<span>其他</span>
 	{{#  } }}
 </script>
 
-<script type="text/html" id="payTypeTpl">
-	{{#  if(d.payType == 1){ }}
-	微信
-	{{#  } else if(d.payType == 2) { }}
-	支付宝
-	{{#  } else if(d.payType == 3) { }}
-	现金
-	{{#  } else if(d.payType == 4) { }}
-	其他
-	{{#  } }}
+<script type="text/html" id="operationTpl">
+	<a href="javascript:" title="编辑" lay-event="edit"><i class="layui-icon layui-icon-edit" style="font-size: 18px;"></i></a>
+	<a href="javascript:" title="删除" lay-event="del"><i class="layui-icon layui-icon-delete" style="font-size: 18px; margin-left: 8px;"></i></a>
 </script>
+
 	</body>
 </html>

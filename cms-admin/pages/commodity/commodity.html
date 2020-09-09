@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>商品列表</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/oksub.css">
+	<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+</head>
+<body>
+<div class="ok-body">
+	<!--模糊搜索区域-->
+	<form class="layui-form ok-search-form">
+		<div class="layui-form-item">
+			<div class="layui-inline">
+				<div class="layui-input-inline">
+					<input class="layui-input" placeholder="请输入商品名字" autocomplete="off" name="name">
+				</div>
+			</div>
+			<div class="layui-inline">
+				<div class="layui-input-inline">
+					<select name="commodityTypeId" lay-search="" id="commodityType">
+					</select>
+				</div>
+			</div>
+			<div class="layui-inline">
+				<div class="layui-input-inline">
+					<select name="channelId" lay-search="" id="channekType">
+					</select>
+				</div>
+			</div>
+			<div class="layui-inline">
+				<div class="layui-input-inline">
+					<button class="layui-btn" lay-submit="" lay-filter="search">
+						<i class="layui-icon layui-icon-search"></i>
+					</button>
+					<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+				</div>
+			</div>
+		</div>
+	</form>
+	<!--数据表格-->
+	<table class="layui-hide" id="tableId" lay-filter="tableFilter"></table>
+</div>
+<!--js逻辑-->
+<script src="../../lib/layui/layui.js"></script>
+<script>
+	layui.use(["element", "jquery", "table", "form", "laydate", "okLayer", "okUtils","okMock"], function () {
+		let table = layui.table;
+		let form = layui.form;
+		let laydate = layui.laydate;
+		let okLayer = layui.okLayer;
+		let okUtils = layui.okUtils;
+		let okMock = layui.okMock;
+		let $ = layui.jquery;
+
+		okUtils.ajax("/commodity/type/listAll", "get", null).done(function(response) {
+			var selectOption = "<option value=''>选择商品类型</option>"
+			for(var i=0;i<response.length;i++){
+				selectOption += '<option value="'+response[i].value+'">'+response[i].name+'</option>'
+			}
+			$('#commodityType').append(selectOption);
+			form.render();
+		}).fail(function(error) {
+			console.log(error)
+		});
+		
+		okUtils.ajax("/channel/listAll", "get", null).done(function(response) {
+			var selectOption = "<option value=''>选择渠道</option>"
+			for(var i=0;i<response.length;i++){
+				selectOption += '<option value="'+response[i].value+'">'+response[i].name+'</option>'
+			}
+			$('#channekType').append(selectOption);
+			form.render();
+		}).fail(function(error) {
+			console.log(error)
+		});
+		
+		let commodityTable = table.render({
+			elem: '#tableId',
+			url: okUtils.baseUrl+'/commodity/list',
+			headers: {
+			    "userId": $.cookie("userId"),
+				"token": $.cookie("token")
+			},
+			parseData: function(res){ //res 即为原始返回的数据
+				return {
+				  "code": res.code, //解析接口状态
+				  "msg": res.msg, //解析提示文本
+				  "count": res.data == null ? 0 : res.data.count, //解析数据长度
+				  "data": res.data == null ? null : res.data.result //解析数据列表
+				};
+			},
+			limit: 20,
+			page: true,
+			toolbar: true,
+			toolbar: "#toolbarTpl",
+			size: "lg",
+			cols: [[
+				{type: "checkbox", fixed: "left"},
+				{field: "id", title: "ID", width: 80, sort: true,hide: true},
+				{field: "commodityNum",title: "商品编号", width: 120},
+				{field: "name",title: "商品名", width: 150},
+				{field: "commodityTypeName",sort: true,title: "商品类型", width: 120},
+				{field: "count", title: "进货数量",sort: true, width: 120,align: "center"},
+				{field: "sellCount", title: "卖出数量",sort: true, width: 120,align: "center"},
+				{field: "currentCount", title: "剩余数量",sort: true, width: 120,align: "center"},
+				{field: "purchasePrice", title: "进价", sort: true,width: 80,align: "center"},
+				{field: "sellPrice", title: "售价", sort: true,width: 80,align: "center"},
+				{field: "channelName", title: "来源", width: 150},
+				{field: "status", title: "状态", sort: true,width: 80,align: "center",templet: "#statusTpl"},
+				{field: "discount", title: "折扣", sort: true,width: 80,align: "center",templet: "#discountTpl"},
+				{field: "discountRate", title: "折扣率",sort: true,align: "center", width: 100},
+				{field: "remark", title: "备注", width: 200},
+				{field: "createTime", title: "创建时间", width: 160,hide: true},
+				{field: "updateTime", title: "修改时间", width: 160,hide: true},
+				{title: "操作", width: 130, align: "center", fixed: "right", templet: "#operationTpl"}
+			]],
+			done: function (res, curr, count) {
+				if("Invalid token"==res.msg){
+					parent.location.href = "../../../cms-admin/pages/login.html";
+				}
+			}
+		});
+		okLoading.close($);
+		form.on("submit(search)", function (data) {
+			commodityTable.reload({
+				where: data.field,
+				page: {curr: 1}
+			});
+			return false;
+		});
+
+		table.on("toolbar(tableFilter)", function (obj) {
+			switch (obj.event) {
+				case "batchUp":
+					batchUp();
+					break;
+				case "batchDowm":
+					batchDowm();
+					break;
+				case "batchDel":
+					batchDel();
+					break;
+				case "add":
+					add();
+					break;
+			}
+		});
+
+		table.on("tool(tableFilter)", function (obj) {
+			let data = obj.data;
+			switch (obj.event) {
+				case "edit":
+					edit(data);
+					break;
+				case "del":
+					del(data.id);
+					break;
+			}
+		});
+
+		function batchUp() {
+			okLayer.confirm("确定要批量上架吗？", function (index) {
+				layer.close(index);
+				let idsStr = okUtils.tableBatchCheck(table);
+				if (idsStr) {
+					let uidList = [];
+					let userStatusVo = {};
+					$.each(idsStr.split(','),function(i,v){
+						uidList.push(v);
+					});
+					okUtils.ajax("/commodity/up", "post", JSON.stringify(uidList), true).done(function (response) {
+						okUtils.tableSuccessMsg("上架成功");
+					}).fail(function (error) {
+						console.log(error)
+					});
+				}
+			});
+		}
+
+		function batchDowm() {
+			okLayer.confirm("确定要批量下架吗？", function (index) {
+				layer.close(index);
+				let idsStr = okUtils.tableBatchCheck(table);
+				if (idsStr) {
+					let uidList = [];
+					let userStatusVo = {};
+					$.each(idsStr.split(','),function(i,v){
+						uidList.push(v);
+					});
+					okUtils.ajax("/commodity/down", "post", JSON.stringify(uidList), true).done(function (response) {
+						okUtils.tableSuccessMsg("下架成功");
+					}).fail(function (error) {
+						console.log(error)
+					});
+				}
+			});
+		}
+
+		function batchDel() {
+			okLayer.confirm("确定要批量删除吗？", function (index) {
+				layer.close(index);
+				let idsStr = okUtils.tableBatchCheck(table);
+				if (idsStr) {
+					let idList = [];
+					$.each(idsStr.split(','),function(i,v){
+						idList.push(v);
+					});
+					okUtils.ajax("/commodity/delete", "post", JSON.stringify(idList), true).done(function (response) {
+						okUtils.tableSuccessMsg("删除成功");
+					}).fail(function (error) {
+						console.log(error)
+					});
+				}
+			});
+		}
+
+		function add() {
+			okLayer.open("添加商品", "commodity-add.html", "60%", "80%", null, function () {
+				commodityTable.reload();
+			})
+		}
+
+		function edit(data) {
+			okLayer.open("更新商品", "commodity-edit.html?id=" + data.id, "60%", "80%", null, function () {
+				commodityTable.reload();
+			})
+		}
+
+		function del(id) {
+			okLayer.confirm("确定要删除吗？", function () {
+				let idList = [];
+				idList.push(id);
+				okUtils.ajax("/commodity/delete", "post",JSON.stringify(idList), true).done(function (response) {
+					okUtils.tableSuccessMsg("删除成功");
+				}).fail(function (error) {
+					console.log(error)
+				});
+			})
+		}
+	})
+</script>
+<!-- 头工具栏模板 -->
+<script type="text/html" id="toolbarTpl">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-sm" lay-event="add">添加商品</button>
+		<button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="batchUp">批量上架</button>
+		<button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="batchDowm">批量下架</button>
+		<button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="batchDel">批量删除</button>
+	</div>
+</script>
+<!-- 行工具栏模板 -->
+<script type="text/html" id="operationTpl">
+	<a href="javascript:" title="编辑" lay-event="edit"><i class="layui-icon">&#xe642;</i></a>
+	<a href="javascript:" title="删除" lay-event="del"><i class="layui-icon" style="margin-left: 5px;">&#xe640;</i></a>
+	<a href="javascript:" title="出售" lay-event="sell"><i class="layui-icon" style="margin-left: 5px;">&#xe698;</i></a>
+	<a href="javascript:" title="记录" lay-event="record"><i class="layui-icon" style="margin-left: 5px;">&#xe63c;</i></a>
+</script>
+
+<script type="text/html" id="statusTpl">
+	{{#  if(d.status == 0){ }}
+	<span class="layui-btn layui-btn-warm layui-btn-xs">已下架</span>
+	{{#  } else if(d.status == 1) { }}
+	<span class="layui-btn layui-btn-normal layui-btn-xs">已上架</span>
+	{{#  } }}
+</script>
+
+<script type="text/html" id="discountTpl">
+	{{#  if(d.discount == 0){ }}
+	<span class="layui-btn layui-btn-xs layui-btn-disabled">否</span>
+	{{#  } else if(d.discount == 1) { }}
+	<span class="layui-btn layui-btn-danger layui-btn-xs">折扣</span>
+	{{#  } }}
+</script>
+</body>
+</html>

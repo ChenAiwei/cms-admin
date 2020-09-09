@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>添加商品</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../css/oksub.css">
+		<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+	</head>
+	<body>
+		<div class="ok-body">
+			<!--form表单-->
+			<form class="layui-form layui-form-pane ok-form">
+				<div class="layui-form-item">
+					<label class="layui-form-label">商品名</label>
+					<div class="layui-input-block">
+						<input type="text" name="name" placeholder="请输入商品名" autocomplete="off" class="layui-input" lay-verify="required">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">商品类型</label>
+					<div class="layui-input-block">
+						<select name="commodityTypeId" lay-search="" id="commodityType" lay-verify="required">
+						</select>
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">商品数量</label>
+					<div class="layui-input-block">
+						<input type="text" name="count" placeholder="请输入商品数量" autocomplete="off" class="layui-input" lay-verify="required" onkeyup = "value=value.replace(/[^\d]/g,'')">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">进价</label>
+					<div class="layui-input-block">
+						<input type="text" name="purchasePrice" placeholder="请输入进价" autocomplete="off" lay-verify="required" class="layui-input" onkeyup="value=value.replace(/^\D*(\d*(?:\.\d{0,2})?).*$/g, '$1')" >
+					</div>
+				</div>
+				
+				<div class="layui-form-item">
+					<label class="layui-form-label">售价</label>
+					<div class="layui-input-block">
+						<input type="text" name="sellPrice" placeholder="请输入售价" autocomplete="off" lay-verify="required" class="layui-input" onkeyup="value=value.replace(/^\D*(\d*(?:\.\d{0,2})?).*$/g, '$1')" >
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">来源</label>
+					<div class="layui-input-block">
+						<select name="channelId" lay-search="" id="channekType" lay-verify="required">
+						</select>
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">状态</label>
+					<div class="layui-input-block">
+						<input type="checkbox" name="status" lay-skin="switch" lay-text="上架|下架" checked="checked">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">折扣</label>
+					<div class="layui-input-block">
+						<input type="checkbox" name="discount" lay-skin="switch" lay-text="是|否" lay-filter="discountSwitch">
+					</div>
+				</div>
+				<div class="layui-form-item" style="display: none;" id="discountRateDiv">
+					<label class="layui-form-label">折扣率</label>
+					<div class="layui-input-block">
+						<input type="text" name="discountRate" placeholder="请输入折扣率" autocomplete="off" class="layui-input" onkeyup="value=value.replace(/^\D*(\d*(?:\.\d{0,2})?).*$/g, '$1')" >
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">备注</label>
+					<div class="layui-input-block">
+						<input type="text" name="remark" placeholder="请输入备注" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<div class="layui-input-block">
+						<button class="layui-btn" lay-submit lay-filter="add">立即提交</button>
+						<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		<!--js逻辑-->
+		<script src="../../lib/layui/layui.js"></script>
+		<script>
+			layui.use(["element", "form", "okLayer", "okUtils", 'jquery'], function() {
+				let form = layui.form;
+				let okLayer = layui.okLayer;
+				let okUtils = layui.okUtils;
+				let $ = layui.jquery;
+
+				okUtils.ajax("/commodity/type/listAll", "get", null).done(function(response) {
+					var selectOption = "<option value=''>选择商品类型</option>"
+					for(var i=0;i<response.length;i++){
+						selectOption += '<option value="'+response[i].value+'">'+response[i].name+'</option>'
+					}
+					$('#commodityType').append(selectOption);
+					form.render();
+					}).fail(function(error) {
+					console.log(error)
+				});
+				
+				okUtils.ajax("/channel/listAll", "get", null).done(function(response) {
+					var selectOption = "<option value=''>选择渠道</option>"
+					for(var i=0;i<response.length;i++){
+						selectOption += '<option value="'+response[i].value+'">'+response[i].name+'</option>'
+					}
+					$('#channekType').append(selectOption);
+					form.render();
+				}).fail(function(error) {
+					console.log(error)
+				});
+				okLoading.close();
+				
+				form.on('switch(discountSwitch)', function(data){
+					if(this.checked){
+						$("#discountRateDiv").attr("style","display:block;");
+					}else{
+						$("#discountRateDiv").attr("style","display:none;");
+						$("input[name='discountRate']").val('');
+					}
+				  });
+				
+				form.on("submit(add)", function(data) {
+					var commodityInfo = data.field;
+					commodityInfo.status = (commodityInfo.status == 'on' ? "1":"0");
+					commodityInfo.discount = (commodityInfo.discount == 'on' ? "1":"0");
+					if(commodityInfo.discount == '1' && ''== commodityInfo.discountRate){
+						layer.msg("请输入折扣率!");
+						return false;
+					}
+					if(commodityInfo.discount == '1' && eval(commodityInfo.discountRate)>1){
+						layer.msg("商品折扣率不能大于1!");
+						return false;
+					}
+					if(eval(commodityInfo.purchasePrice) > eval(commodityInfo.sellPrice)){
+						layer.msg("售价不能低于进价!");
+						return false;
+					}
+					okUtils.ajax("/commodity/add", "post",JSON.stringify(commodityInfo), true).done(function(response) {
+						okLayer.greenTickMsg("添加成功", function() {
+							parent.layer.close(parent.layer.getFrameIndex(window.name));
+						});
+					}).fail(function(error) {
+						console.log(error)
+					});
+					return false;
+				});
+				
+			});
+		</script>
+	</body>
+</html>

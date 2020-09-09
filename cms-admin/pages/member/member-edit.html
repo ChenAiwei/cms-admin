@@ -69,7 +69,6 @@
 		var id = okUtils.requestParameter().id;
 		
 		okUtils.ajax("/member/getMember?id="+id, "get", null).done(function(response) {
-			response.status = (response.status == '0' ? false:true);
 			form.val("filter", response);
 		}).fail(function(error) {
 			console.log(error)
