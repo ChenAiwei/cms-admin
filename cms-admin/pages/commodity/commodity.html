@@ -104,7 +104,7 @@
 				{field: "commodityTypeName",sort: true,title: "商品类型", width: 120},
 				{field: "count", title: "进货数量",sort: true, width: 120,align: "center"},
 				{field: "sellCount", title: "卖出数量",sort: true, width: 120,align: "center"},
-				{field: "currentCount", title: "剩余数量",sort: true, width: 120,align: "center"},
+				{field: "stockCount", title: "库存数量",sort: true, width: 120,align: "center"},
 				{field: "purchasePrice", title: "进价", sort: true,width: 80,align: "center"},
 				{field: "sellPrice", title: "售价", sort: true,width: 80,align: "center"},
 				{field: "channelName", title: "来源", width: 150},
@@ -156,6 +156,9 @@
 					break;
 				case "del":
 					del(data.id);
+					break;
+				case "sell":
+					sell(data.id);
 					break;
 			}
 		});
@@ -228,6 +231,12 @@
 			})
 		}
 
+		function sell(id) {
+			okLayer.open("出售商品", "commodity-sell.html?id=" + id, "60%", "80%", null, function () {
+				commodityTable.reload();
+			})
+		}
+		
 		function del(id) {
 			okLayer.confirm("确定要删除吗？", function () {
 				let idList = [];
