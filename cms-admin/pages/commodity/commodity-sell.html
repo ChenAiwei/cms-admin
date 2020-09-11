@@ -28,7 +28,7 @@
 				<div class="layui-form-item">
 					<label class="layui-form-label">库存数量</label>
 					<div class="layui-input-block">
-						<input type="text" name="count" disabled="disabled" autocomplete="off" class="layui-input"  onkeyup = "value=value.replace(/[^\d]/g,'')">
+						<input type="text" name="stockCount" disabled="disabled" autocomplete="off" class="layui-input"  onkeyup = "value=value.replace(/[^\d]/g,'')">
 					</div>
 				</div>
 				<div class="layui-form-item">
@@ -97,8 +97,8 @@
 				</div>
 				<div class="layui-form-item">
 					<div class="layui-input-block">
-						<button class="layui-btn" lay-submit lay-filter="edit">立即售出</button>
-						<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+						<button class="layui-btn" lay-submit lay-filter="sell">立即售出</button>
+						<button class="layui-btn layui-btn-primary" id="cancle-btn">取消</button>
 					</div>
 				</div>
 			</form>
@@ -145,28 +145,25 @@
 				});
 				 $("input[name='sellCommodityCount']").bind('input propertychange', function() {
 				    var sellCount = $("input[name='sellCommodityCount']").val();
-					var price = commodity.discount == 0 ? commodity.purchasePrice : commodity.purchasePrice * commodity.discountRate
-				    $("input[name='money']").val(price*sellCount);
+					var price = commodity.discount == 0 ? commodity.sellPrice : commodity.sellPrice * commodity.discountRate
+				    $("input[name='money']").val((price*sellCount).toFixed(2));
 				 })
-				form.on("submit(edit)", function(data) {
-					var commodityInfo = data.field;
-					commodityInfo.id = id;
-					commodityInfo.status = (commodityInfo.status == 'on' ? "1":"0");
-					commodityInfo.discount = (commodityInfo.discount == 'on' ? "1":"0");
-					if(commodityInfo.discount == '1' && ''== commodityInfo.discountRate){
-						layer.msg("请输入折扣率!");
-						return false;
+				form.on("submit(sell)", function(data) {
+					var commoditySellDto = new Object();
+					commoditySellDto.id = id;
+					commoditySellDto.sellCommodityCount = data.field.sellCommodityCount;
+					commoditySellDto.payType = data.field.payType;
+					commoditySellDto.sellRemark = data.field.sellRemark;
+					commoditySellDto.vip =  (data.field.consumerType == 'on' ? 1:0);
+					if(commoditySellDto.vip == 1){
+						if(data.field.memberId == ''){
+							layer.msg("请选择会员！");
+							return false;
+						}
+						commoditySellDto.memberId = data.field.memberId;
 					}
-					if(commodityInfo.discount == '1' && eval(commodityInfo.discountRate)>1){
-						layer.msg("商品折扣率不能大于1!");
-						return false;
-					}
-					if(eval(commodityInfo.purchasePrice) > eval(commodityInfo.sellPrice)){
-						layer.msg("售价不能低于进价!");
-						return false;
-					}
-					okUtils.ajax("/commodity/edit", "post",JSON.stringify(commodityInfo), true).done(function(response) {
-						okLayer.greenTickMsg("编辑成功", function() {
+					okUtils.ajax("/commodity/sell", "post",JSON.stringify(commoditySellDto), true).done(function(response) {
+						okLayer.greenTickMsg("出售成功", function() {
 							parent.layer.close(parent.layer.getFrameIndex(window.name));
 						});
 					}).fail(function(error) {
@@ -174,6 +171,9 @@
 					});
 					return false;
 				});
+				$("#cancle-btn").on('click',function(){
+					parent.layer.close(parent.layer.getFrameIndex(window.name));
+				})
 			});
 		</script>
 	</body>

@@ -158,7 +158,10 @@
 					del(data.id);
 					break;
 				case "sell":
-					sell(data.id);
+					sell(data);
+					break;
+				case "record":
+					record(data.id);
 					break;
 			}
 		});
@@ -230,9 +233,19 @@
 				commodityTable.reload();
 			})
 		}
+		
+		function record(id) {
+			okLayer.open("订单记录", "sell-record.html?id=" + id, "85%", "80%", null, function () {
+				commodityTable.reload();
+			})
+		}
 
-		function sell(id) {
-			okLayer.open("出售商品", "commodity-sell.html?id=" + id, "60%", "80%", null, function () {
+		function sell(data) {
+			if(data.status == 0){
+				layer.msg("商品已下架！");
+				return false;
+			}
+			okLayer.open("出售商品", "commodity-sell.html?id=" + data.id, "60%", "80%", null, function () {
 				commodityTable.reload();
 			})
 		}
