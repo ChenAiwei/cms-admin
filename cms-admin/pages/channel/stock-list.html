@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>订单列表</title>
+	<title>库存列表</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<link rel="stylesheet" href="../../css/oksub.css">
 	<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
@@ -10,23 +10,8 @@
 <body>
 <div class="ok-body">
 	<!--模糊搜索区域-->
-	<form class="layui-form ok-search-form" id = "recordForm">
+	<form class="layui-form ok-search-form">
 		<div class="layui-form-item">
-			<div class="layui-inline">
-				<div class="layui-input-inline">
-					<input class="layui-input" placeholder="请输入订单号" autocomplete="off" name="orderNum">
-				</div>
-			</div>
-			<div class="layui-inline">
-				<div class="layui-input-inline">
-					<input class="layui-input" placeholder="请输入商品名字" autocomplete="off" name="name">
-				</div>
-			</div>
-			<div class="layui-inline">
-				<div class="layui-input-inline">
-					<input class="layui-input" placeholder="请输入商品编号" autocomplete="off" name="commodityNum">
-				</div>
-			</div>
 			<div class="layui-inline">
 				<div class="layui-input-inline">
 					<select name="commodityTypeId" lay-search="" id="commodityType">
@@ -63,10 +48,7 @@
 		let okUtils = layui.okUtils;
 		let okMock = layui.okMock;
 		let $ = layui.jquery;
-		var id = okUtils.requestParameter().id;
-		
-		id == undefined ? $("#recordForm").attr("style","display:block;"):$("#recordForm").attr("style","display:none;");
-		
+
 		okUtils.ajax("/commodity/type/listAll", "get", null).done(function(response) {
 			var selectOption = "<option value=''>选择商品类型</option>"
 			for(var i=0;i<response.length;i++){
@@ -89,9 +71,9 @@
 			console.log(error)
 		});
 		
-		let commodityTable = table.render({
+		let stockTable = table.render({
 			elem: '#tableId',
-			url: okUtils.baseUrl+'/commodity/sellRecord?id='+ (id == undefined ? '':id),
+			url: okUtils.baseUrl+'/channel/stockList',
 			headers: {
 			    "userId": $.cookie("userId"),
 				"token": $.cookie("token")
@@ -110,47 +92,31 @@
 			toolbar: "#toolbarTpl",
 			size: "lg",
 			cols: [[
-				{field: "orderNum",title: "订单号", width: 180},
-				{field: "commodityNum",title: "商品编号", width: 150},
-				{field: "name",title: "商品名", width: 150},
 				{field: "commodityTypeName",sort: true,title: "商品类型", width: 120},
-				{field: "channelName", title: "来源", width: 150},
-				{field: "purchasePrice", title: "进价", sort: true,width: 80,align: "center"},
-				{field: "sellPrice", title: "售价", sort: true,width: 80,align: "center"},
-				{field: "sellCount", title: "数量",sort: true, width: 120,align: "center"},
-				{field: "sellMoney", title: "销售额",sort: true, width: 120,align: "center"},
-				{field: "customType", title: "客户",sort: true, width: 120,align: "center",templet: "#customTypeTpl"},
-				{field: "createTime", title: "下单时间", sort: true,width: 160},
-				{field: "remark", title: "备注",width: 200}
+				{field: "channelName", title: "供货商", width: 150},
+				{field: "count", title: "进货数量",sort: true, width: 120,align: "center"},
+				{field: "sellCount", title: "卖出数量",sort: true, width: 120,align: "center"},
+				{field: "stockCount", title: "库存数量",sort: true, width: 120,align: "center"},
+				{field: "purchasePrice", title: "成本", sort: true,width: 120,align: "center"},
+				{field: "sellPrice", title: "销售额", sort: true,width: 120,align: "center"},
 			]],
 			done: function (res, curr, count) {
 				if("Invalid token"==res.msg){
-					if(id != undefined){
-						layer.msg("会话过期，请刷新页面重新登录！")
-					}else{
-						parent.location.href = "../../../cms-admin/pages/login.html";
-					}
+					parent.location.href = "../../../cms-admin/pages/login.html";
 				}
 			}
 		});
 		okLoading.close($);
 		form.on("submit(search)", function (data) {
-			commodityTable.reload({
+			stockTable.reload({
 				where: data.field,
 				page: {curr: 1}
 			});
 			return false;
 		});
 
-		
 	})
 </script>
-<script type="text/html" id="customTypeTpl">
-	{{#  if(d.memberId == null){ }}
-	<span class="layui-btn layui-btn-warm layui-btn-xs">普通客户</span>
-	{{#  } else { }}
-	<span class="layui-btn layui-btn-danger layui-btn-xs">VIP-{{d.customType}}</span>
-	{{#  } }}
-</script>
+
 </body>
 </html>

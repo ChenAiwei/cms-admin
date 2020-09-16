@@ -117,7 +117,7 @@
 					commodity = response;
 					if(response.discount == 1){
 						$("#discountPriceDiv").attr("style","display:block;");
-						$("input[name='discountPrice']").val(response.purchasePrice * response.discountRate);
+						$("input[name='discountPrice']").val(response.sellPrice * response.discountRate);
 					}else{
 						$("#discountPriceDiv").attr("style","display:none;");
 						$("input[name='discountPrice']").val('');
