@@ -3,7 +3,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<title>编辑商品类型</title>
+		<title>编辑宠物服务</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 		<link rel="stylesheet" href="../../css/oksub.css">
 		<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
@@ -13,21 +13,33 @@
 			<!--form表单-->
 			<form class="layui-form layui-form-pane ok-form" lay-filter="filter">
 				<div class="layui-form-item">
-					<label class="layui-form-label">商品类型名</label>
+					<label class="layui-form-label">服务项目名</label>
 					<div class="layui-input-block">
-						<input type="text" name="name" placeholder="请输入商品类型名" autocomplete="off" class="layui-input" lay-verify="required">
+						<input type="text" name="projectName" placeholder="请输入服务项目名" autocomplete="off" class="layui-input" lay-verify="required">
 					</div>
 				</div>
 				
 				<div class="layui-form-item">
 					<label class="layui-form-label">宠物类型</label>
 					<div class="layui-input-block">
-						<select name="type" lay-verify="required">
+						<select name="petType" lay-verify="required">
 							<option value=""></option>
 							<option value="1">猫</option>
 							<option value="2">狗</option>
 							<option value="3">其他</option>
 						</select>
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">收费</label>
+					<div class="layui-input-block">
+						<input type="text" name="money" placeholder="请输入费用" autocomplete="off" lay-verify="required" class="layui-input" onkeyup="value=value.replace(/^\D*(\d*(?:\.\d{0,2})?).*$/g, '$1')" >
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">备注</label>
+					<div class="layui-input-block">
+						<input type="text" name="remark" placeholder="请输入备注" autocomplete="off" class="layui-input">
 					</div>
 				</div>
 				<div class="layui-form-item">
@@ -48,7 +60,7 @@
 				let $ = layui.jquery;
 
 				var id = okUtils.requestParameter().id;
-				okUtils.ajax("/commodity/type/getCommodityType?id="+id, "get", null).done(function(response) {
+				okUtils.ajax("/petBeautyCare/getById?id="+id, "get", null).done(function(response) {
 					form.val("filter", response);
 				}).fail(function(error) {
 					console.log(error)
@@ -56,9 +68,9 @@
 				});
 				okLoading.close();
 				form.on("submit(edit)", function(data) {
-					var commodityTypeInfo = data.field;
-					commodityTypeInfo.id = id;
-					okUtils.ajax("/commodity/type/edit", "post",JSON.stringify(commodityTypeInfo), true).done(function(response) {
+					var beautyInfo = data.field;
+					beautyInfo.id = id;
+					okUtils.ajax("/petBeautyCare/edit", "post",JSON.stringify(beautyInfo), true).done(function(response) {
 						okLayer.greenTickMsg("编辑成功", function() {
 							parent.layer.close(parent.layer.getFrameIndex(window.name));
 						});

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>宠物记录</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/oksub.css">
+	<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+</head>
+<body>
+	</form>
+	<!--数据表格-->
+	<table class="layui-hide" id="tableId" lay-filter="tableFilter"></table>
+</div>
+<!--js逻辑-->
+<script src="../../lib/layui/layui.js"></script>
+<script>
+	layui.use(["jquery", "table", "form",  "okLayer", "okUtils"], function () {
+		let table = layui.table;
+		let okLayer = layui.okLayer;
+		let okUtils = layui.okUtils;
+		
+		let $ = layui.jquery;
+		var id = okUtils.requestParameter().id;
+		
+		let sellTable = table.render({
+			elem: '#tableId',
+			url: okUtils.baseUrl+'/pet/record?id='+ id,
+			headers: {
+			    "userId": $.cookie("userId"),
+				"token": $.cookie("token")
+			},
+			parseData: function(res){ //res 即为原始返回的数据
+				return {
+				  "code": res.code, //解析接口状态
+				  "msg": res.msg, //解析提示文本
+				  "count": res.data == null ? 0 : res.data.length, //解析数据长度
+				  "data": res.data == null ? null : res.data //解析数据列表
+				};
+			},
+			limit: 20,
+			page: false,
+			toolbar: true,
+			toolbar: "#toolbarTpl",
+			size: "lg",
+			cols: [[
+				{field: "orderNum",title: "订单号", width: 180},
+				{field: "extName",title: "宠物名", width: 180},
+				{field: "type",title: "类型", width: 150,templet: "#typeTpl",align: "center"},
+				{field: "money",sort: true,title: "金额", width: 150,align: "center"},
+/* 				{field: "source",title: "来源", width: 180,templet: "#sourceTpl",align: "center"},
+ */				{field: "createTime", title: "订单时间", sort: true,width: 200,align: "center"},
+				{field: "remark", title: "备注",width: 200}
+			]],
+			done: function (res, curr, count) {
+				if("Invalid token"==res.msg){
+					if(id != undefined){
+						layer.msg("会话过期，请刷新页面重新登录！")
+					}else{
+						parent.location.href = "../../../cms-admin/pages/login.html";
+					}
+				}
+			}
+		});
+		okLoading.close($);
+	})
+</script>
+<script type="text/html" id="typeTpl">
+	{{#  if(d.type == 1){ }}
+	<span class="layui-btn layui-btn-warm layui-btn-xs">支出</span>
+	{{#  } else { }}
+	<span class="layui-btn layui-btn-danger layui-btn-xs">收入</span>
+	{{#  } }}
+</script>
+
+<script type="text/html" id="sourceTpl">
+	{{#  if(d.source == 1){ }}
+	<span>宠物</span>
+	{{#  } else if(d.source == 2) { }}
+	<span>寄养</span>
+	{{#  } else if(d.source == 3) { }}
+	<span>护理</span>
+	{{#  } }}
+</script>
+
+</body>
+</html>

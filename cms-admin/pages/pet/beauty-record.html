@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>宠物服务记录</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/oksub.css">
+	<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+</head>
+<body>
+	<div class="ok-body">
+		<!--模糊搜索区域-->
+		<form class="layui-form ok-search-form">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<div class="layui-input-inline">
+						<input class="layui-input" placeholder="下单日期" autocomplete="off" id="startTime" name="date">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<div class="layui-input-inline">
+						<button class="layui-btn" lay-submit="" lay-filter="search">
+							<i class="layui-icon layui-icon-search"></i>
+						</button>
+						<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+					</div>
+				</div>
+			</div>
+		</form>
+		<!--数据表格-->
+		<table class="layui-hide" id="tableId" lay-filter="tableFilter"></table>
+	</div>
+<!--js逻辑-->
+<script src="../../lib/layui/layui.js"></script>
+<script>
+	layui.use(["jquery", "table", "form","okLayer", "okUtils","laydate"], function () {
+		let table = layui.table;
+		let okLayer = layui.okLayer;
+		let okUtils = layui.okUtils;
+		let form = layui.form;
+		let $ = layui.jquery;
+		var id = okUtils.requestParameter().id;
+		let laydate = layui.laydate;
+		laydate.render({
+			elem: "#startTime",
+			type: "date"
+		});
+			
+		form.verify({
+			startTimeVerify: [
+				/^((((1[6-9]|[2-9]\d)\d{2})-(0?[13578]|1[02])-(0?[1-9]|[12]\d|3[01]))|(((1[6-9]|[2-9]\d)\d{2})-(0?[13456789]|1[012])-(0?[1-9]|[12]\d|30))|(((1[6-9]|[2-9]\d)\d{2})-0?2-(0?[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-0?2-29-))(\s(([01]\d{1})|(2[0123])):([0-5]\d):([0-5]\d))?$/,
+				'日期格式不正确'
+			]
+		});
+		let recordTable = table.render({
+			elem: '#tableId',
+			url: okUtils.baseUrl+'/petBeautyCare/record?id='+ id,
+			headers: {
+			    "userId": $.cookie("userId"),
+				"token": $.cookie("token")
+			},
+			parseData: function(res){ //res 即为原始返回的数据
+				return {
+				  "code": res.code, //解析接口状态
+				  "msg": res.msg, //解析提示文本
+				  "count": res.data == null ? 0 :  res.data.count, //解析数据长度
+				  "data": res.data == null ? null : res.data.result //解析数据列表
+				};
+			},
+			limit: 20,
+			page: true,
+			toolbar: true,
+			toolbar: "#toolbarTpl",
+			size: "lg",
+			cols: [[
+				{field: "orderNum",title: "订单号", width: 180},
+				{field: "extName",title: "服务项目名", width: 180},
+				{field: "type",title: "类型", width: 150,templet: "#typeTpl",align: "center"},
+				{field: "money",sort: true,title: "金额", width: 150,align: "center"},
+/* 				{field: "source",title: "来源", width: 180,templet: "#sourceTpl",align: "center"},
+ */				{field: "createTime", title: "订单时间", sort: true,width: 200,align: "center"},
+				{field: "remark", title: "备注",width: 200}
+			]],
+			done: function (res, curr, count) {
+				if("Invalid token"==res.msg){
+					if(id != undefined){
+						layer.msg("会话过期，请刷新页面重新登录！")
+					}else{
+						parent.location.href = "../../../cms-admin/pages/login.html";
+					}
+				}
+			}
+		});
+		form.on("submit(search)", function (data) {
+			recordTable.reload({
+				where: data.field,
+				page: {curr: 1}
+			});
+			return false;
+		});
+		okLoading.close($);
+	})
+</script>
+<script type="text/html" id="typeTpl">
+	{{#  if(d.type == 1){ }}
+	<span class="layui-btn layui-btn-warm layui-btn-xs">支出</span>
+	{{#  } else { }}
+	<span class="layui-btn layui-btn-danger layui-btn-xs">收入</span>
+	{{#  } }}
+</script>
+
+<script type="text/html" id="sourceTpl">
+	{{#  if(d.source == 1){ }}
+	<span>宠物</span>
+	{{#  } else if(d.source == 2) { }}
+	<span>寄养</span>
+	{{#  } else if(d.source == 3) { }}
+	<span>护理</span>
+	{{#  } }}
+</script>
+
+</body>
+</html>

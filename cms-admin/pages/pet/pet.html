@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>宠物列表</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/oksub.css">
+	<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+</head>
+<body>
+<div class="ok-body">
+	<!--模糊搜索区域-->
+	<form class="layui-form ok-search-form">
+		<div class="layui-form-item">
+			<div class="layui-inline">
+				<div class="layui-input-inline">
+					<input class="layui-input" placeholder="请输入宠物名字" autocomplete="off" name="name">
+				</div>
+			</div>
+			<div class="layui-inline">
+				<div class="layui-input-inline">
+					<select name="typeId" lay-search="" id="petTypeId">
+					</select>
+				</div>
+			</div>
+			<div class="layui-inline">
+				<div class="layui-input-inline">
+					<button class="layui-btn" lay-submit="" lay-filter="search">
+						<i class="layui-icon layui-icon-search"></i>
+					</button>
+					<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+				</div>
+			</div>
+		</div>
+	</form>
+	<!--数据表格-->
+	<table class="layui-hide" id="tableId" lay-filter="tableFilter"></table>
+</div>
+<!--js逻辑-->
+<script src="../../lib/layui/layui.js"></script>
+<script>
+	layui.use(["element", "jquery", "table", "form", "laydate", "okLayer", "okUtils","okMock"], function () {
+		let table = layui.table;
+		let form = layui.form;
+		let laydate = layui.laydate;
+		let okLayer = layui.okLayer;
+		let okUtils = layui.okUtils;
+		let okMock = layui.okMock;
+		let $ = layui.jquery;
+
+		okUtils.ajax("/petType/listAll", "get", null).done(function(response) {
+			var selectOption = "<option value=''>选择宠物品种</option>"
+			for(var i=0;i<response.length;i++){
+				selectOption += '<option value="'+response[i].value+'">'+response[i].name+'</option>'
+			}
+			$('#petTypeId').append(selectOption);
+			form.render();
+		}).fail(function(error) {
+			console.log(error)
+		});
+		
+		
+		let petTable = table.render({
+			elem: '#tableId',
+			url: okUtils.baseUrl+'/pet/list',
+			headers: {
+			    "userId": $.cookie("userId"),
+				"token": $.cookie("token")
+			},
+			parseData: function(res){ //res 即为原始返回的数据
+				return {
+				  "code": res.code, //解析接口状态
+				  "msg": res.msg, //解析提示文本
+				  "count": res.data == null ? 0 : res.data.count, //解析数据长度
+				  "data": res.data == null ? null : res.data.result //解析数据列表
+				};
+			},
+			limit: 20,
+			page: true,
+			toolbar: true,
+			toolbar: "#toolbarTpl",
+			size: "lg",
+			cols: [[
+				{field: "id", title: "ID", width: 80, sort: true,hide: true},
+				{field: "name",title: "宠物名", width: 150,align: "center"},
+				{field: "petType",title: "宠物品种", width: 150,align: "center"},
+				{field: "source",sort: true,title: "宠物来源", width: 150,align: "center",templet: "#sourceTpl"},
+				{field: "status", title: "宠物状态",sort: true, width: 150,align: "center",templet: "#statusTpl"},
+				{field: "startTime", title: "入店时间",sort: true, width: 200,align: "center"},
+				{field: "purchasePrice", title: "进价",sort: true, width: 150,align: "center"},
+				{field: "sellPrice", title: "售价", sort: true,width: 150,align: "center"},
+				{field: "sellDate", title: "出售日期", width: 200,align: "center"},
+				{field: "remark", title: "备注", sort: true,width: 200},
+				{title: "操作", width: 130, align: "center", fixed: "right", templet: "#operationTpl"}
+			]],
+			done: function (res, curr, count) {
+				if("Invalid token"==res.msg){
+					parent.location.href = "../../../cms-admin/pages/login.html";
+				}
+			}
+		});
+		okLoading.close($);
+		form.on("submit(search)", function (data) {
+			petTable.reload({
+				where: data.field,
+				page: {curr: 1}
+			});
+			return false;
+		});
+
+		table.on("toolbar(tableFilter)", function (obj) {
+			switch (obj.event) {
+				case "add":
+					add();
+					break;
+			}
+		});
+
+		table.on("tool(tableFilter)", function (obj) {
+			let data = obj.data;
+			switch (obj.event) {
+				case "edit":
+					edit(data);
+					break;
+				case "del":
+					del(data);
+					break;
+				case "sell":
+					sell(data);
+					break;
+				case "record":
+					record(data);
+					break;
+			}
+		});
+	
+		function add() {
+			okLayer.open("添加宠物", "pet-add.html", "60%", "80%", null, function () {
+				petTable.reload();
+			})
+		}
+
+		function edit(data) {
+			okLayer.open("编辑宠物", "pet-edit.html?id=" + data.id+"&status="+data.status, "60%", "80%", null, function () {
+				petTable.reload();
+			})
+		}
+		
+		function record(data) {
+			okLayer.open("订单记录", "pet-record.html?id=" + data.id, "80%", "40%", null, function () {
+				petTable.reload();
+			})
+		}
+
+		function sell(data) {
+			if(data.status == 3){
+				layer.msg("宠物已售出！");
+				return false;
+			}
+			okLayer.confirm("确定售出【"+data.name+"】?", function () {
+				okUtils.ajax("/pet/sellPet?id="+data.id, "get",null, true).done(function (response) {
+					okUtils.tableSuccessMsg("售出成功");
+				}).fail(function (error) {
+					console.log(error)
+				});
+			})
+		}
+		
+		function del(data) {
+			okLayer.confirm("确定要删除吗？", function () {
+				okUtils.ajax("/pet/deletePet?id="+data.id, "get",null, true).done(function (response) {
+					okUtils.tableSuccessMsg("删除成功");
+				}).fail(function (error) {
+					console.log(error)
+				});
+			})
+		}
+	})
+</script>
+<!-- 头工具栏模板 -->
+<script type="text/html" id="toolbarTpl">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-sm" lay-event="add">添加宠物</button>
+	</div>
+</script>
+<!-- 行工具栏模板 -->
+<script type="text/html" id="operationTpl">
+	<a href="javascript:" title="编辑" lay-event="edit"><i class="layui-icon">&#xe642;</i></a>
+	<a href="javascript:" title="删除" lay-event="del"><i class="layui-icon" style="margin-left: 5px;">&#xe640;</i></a>
+	<a href="javascript:" title="出售" lay-event="sell"><i class="layui-icon" style="margin-left: 5px;">&#xe698;</i></a>
+	<a href="javascript:" title="记录" lay-event="record"><i class="layui-icon" style="margin-left: 5px;">&#xe63c;</i></a>
+</script>
+
+<script type="text/html" id="sourceTpl">
+	{{#  if(d.source == 1){ }}
+	<span>自养</span>
+	{{#  } else if(d.source == 2) { }}
+	<span>三方店铺</span>
+	{{#  } else if(d.source == 3) { }}
+	<span>其他</span>
+	{{#  } }}
+</script>
+
+<script type="text/html" id="statusTpl">
+	{{#  if(d.status == 1){ }}
+	<span>在店</span>
+	{{#  } else if(d.status == 2) { }}
+	<span>外出</span>
+	{{#  } else if(d.status == 3) { }}
+	<span class="layui-btn layui-btn-danger layui-btn-xs">已售出</span>
+	{{#  } else if(d.status == 4) { }}
+	<span>其他</span>
+	{{#  } }}
+</script>
+</body>
+</html>

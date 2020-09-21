@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<title>商品类型</title>
+		<title>宠物类型</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 		<link rel="stylesheet" href="../../css/oksub.css">
 		<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
@@ -14,7 +14,7 @@
 				<div class="layui-form-item">
 					<div class="layui-inline">
 						<div class="layui-input-inline">
-							<input class="layui-input" placeholder="请输入商品类型名" autocomplete="off" name="name">
+							<input class="layui-input" placeholder="请输入宠物类型名" autocomplete="off" name="name">
 						</div>
 					</div>
 					<div class="layui-inline">
@@ -53,9 +53,9 @@
 		let okMock = layui.okMock;
 		let $ = layui.jquery;
 		
-		let commdityTypeTable = table.render({
+		let petTypeTable = table.render({
 			elem: "#tableId",
-			url: okUtils.baseUrl+'/commodity/type/list',
+			url: okUtils.baseUrl+'/petType/list',
 			headers: {
 			    "userId": $.cookie("userId"),
 				"token": $.cookie("token")
@@ -74,8 +74,8 @@
 			size: "lg",
 			cols: [[
 				{field: "id", title: "ID", width: 80, sort: true,hide: true},
-				{field: "name", title: "商品类型名", width: 300,align: "center"},
-				{field: "type", title: "宠物类型", width: 200,align: "center",templet:"#typeTpl",sort:true},
+				{field: "petName", title: "宠物类型名", width: 300,align: "center"},
+				{field: "petType", title: "宠物类型", width: 200,align: "center",templet:"#typeTpl",sort:true},
 				{title: "操作", width: 150, align: "center", templet: "#operationTpl"}
 				
 			]],
@@ -87,7 +87,7 @@
 		});
 		okLoading.close();
 		form.on("submit(search)", function (data) {
-			commdityTypeTable.reload({
+			petTypeTable.reload({
 				where: data.field,
 				page: {curr: 1}
 			});
@@ -116,19 +116,19 @@
 	
 		function add() {
 			okLayer.open("添加类型", "type-add.html", "25%", "40%", null, function () {
-				commdityTypeTable.reload();
+				petTypeTable.reload();
 			})
 		}
 	
 		function edit(id) {
 			okLayer.open("更新类型", "type-edit.html?id=" + id, "25%", "40%", null, function () {
-				commdityTypeTable.reload();
+				petTypeTable.reload();
 			})
 		}
 		
 		function del(id) {
 			okLayer.confirm("确定要删除吗？", function () {
-				okUtils.ajax("/commodity/type/delete?id="+id, "get",null, true).done(function (response) {
+				okUtils.ajax("/petType/delete?id="+id, "get",null, true).done(function (response) {
 					okUtils.tableSuccessMsg("删除成功");
 				}).fail(function (error) {
 					console.log(error)
@@ -145,11 +145,11 @@
 </script>
 
 <script type="text/html" id="typeTpl">
-	{{#  if(d.type == 1){ }}
+	{{#  if(d.petType == 1){ }}
 	<span>猫</span>
-	{{#  } else if(d.type == 2) { }}
+	{{#  } else if(d.petType == 2) { }}
 	<span>狗</span>
-	{{#  } else if(d.type == 3) { }}
+	{{#  } else if(d.petType == 3) { }}
 	<span>其他</span>
 	{{#  } }}
 </script>
