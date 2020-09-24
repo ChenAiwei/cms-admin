@@ -20,7 +20,7 @@ layui.define(["layer"], function (exports) {
          * @param endFunction
          */
         open: function (title, content, width, height, successFunction, endFunction) {
-            layer.open({
+            let currentIndex = layer.open({
                 title: title,
                 type: 2,
                 maxmin: true,
@@ -33,6 +33,7 @@ layui.define(["layer"], function (exports) {
                 success: successFunction,
                 end: endFunction
             });
+			okLayer.isPc(currentIndex);
         },
         /**
          * msg()函数二次封装
@@ -108,8 +109,24 @@ layui.define(["layer"], function (exports) {
                 // 随机动画
                 return Math.floor(Math.random() * animArray.length);
             }
-        }
+        },
+		/**
+		 * 判断浏览器环境
+		 */
+		isPc: function(index){
+			var userAgentInfo = navigator.userAgent;
+			var Agents = ["Android", "iPhone","SymbianOS", "Windows Phone","iPod"];
+			var flag = true;
+			for (var v = 0; v < Agents.length; v++) {
+				if (userAgentInfo.indexOf(Agents[v]) > 0) {
+					flag = false;
+					break;
+				}
+			}
+			if (!flag) {
+				layer.full(index);
+			}
+		}
     }
-
     exports("okLayer", okLayer);
 });

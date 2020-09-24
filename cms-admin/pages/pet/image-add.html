@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>图片上传</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../css/oksub.css">
+		<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+	</head>
+	<body>
+		<div class="ok-body">
+			<!--form表单-->
+			<form class="layui-form layui-form-pane ok-form">
+				<div style="width: 85%; height: 400px; margin: 0 auto; border:0.5px solid darkgray;">
+					<img style="width:100%; height:100%;" id="prePic">
+				</div>
+				<div style="text-align: center;margin-top: 5%;">
+					<button type="button" class="layui-btn layui-btn-normal" id="chosePic">选择图片</button>
+					<button type="button" class="layui-btn" id="add">立即上传</button>
+				</div>
+			</form>
+		</div>
+		<!--js逻辑-->
+		<script src="../../lib/layui/layui.js"></script>
+		<script>
+			layui.use(["element", "form", "okUtils", 'jquery', "upload", "okLayer"], function() {
+				let form = layui.form;
+				let okUtils = layui.okUtils;
+				let $ = layui.jquery;
+				let upload = layui.upload;
+				let okLayer = layui.okLayer;
+				var id = okUtils.requestParameter().id;
+				var picModel = new Object();
+				okUtils.ajax("/pet/fosterCare/getById?id=" + id, "get", null).done(function(response) {
+					picModel.id = response.id;
+					picModel.fileName = response.petName;
+					if (response.picture != null) {
+						$('#prePic').attr('src', response.picture);
+						picModel.picStr = response.picture;
+					}
+				}).fail(function(error) {
+					console.log(error)
+					parent.layer.close(parent.layer.getFrameIndex(window.name));
+				});
+				okLoading.close();
+				picModel.id = id;
+				var uploadInst = upload.render({
+					elem: '#chosePic',
+					auto: false,
+					choose: function(obj) {
+						//预读本地文件示例，不支持ie8
+						obj.preview(function(index, file, result) {
+							if (file.size > 1024 * 300) { //大于300Kb压缩
+								photoCompress(file, {
+									quality: 0.2
+								}, function(base64Codes) {
+									picModel.picStr = base64Codes;
+								})
+							}else{
+								picModel.picStr = result;
+							}
+							$('#prePic').attr('src', result); //图片链接（base64）
+							picModel.fileName = file.name;
+						});
+					}
+				});
+				$("#add").click(function() {
+					if (picModel.picStr == null) {
+						layer.msg("请选择图片！");
+						return;
+					}
+					okUtils.ajax("/pet/fosterCare/uploadPic", "post", JSON.stringify(picModel), true).done(function(response) {
+						okLayer.greenTickMsg("上传成功", function() {
+							parent.layer.close(parent.layer.getFrameIndex(window.name));
+						});
+					}).fail(function(error) {
+						console.log(error)
+					});
+				})
+
+				/**
+				 * @param file: 上传的图片
+				 * @param objCompressed：压缩后的图片规格
+				 * @param objDiv：容器或回调函数
+				 */
+				function photoCompress(file, objCompressed, objDiv) {
+					var ready = new FileReader();
+					ready.readAsDataURL(file);
+					ready.onload = function() {
+						var fileResult = this.result;
+						canvasDataURL(fileResult, objCompressed, objDiv)
+					}
+				}
+
+				function canvasDataURL(path, objCompressed, callback) {
+					var img = new Image();
+					img.src = path;
+					img.onload = function() {
+						var that = this;
+						//默认压缩后图片规格
+						var quality = 0.5;
+						var w = that.width;
+						var h = that.height;
+						var scale = w / h;
+						//实际要求
+						w = objCompressed.width || w;
+						h = objCompressed.height || (w / scale);
+						if (objCompressed.quality && objCompressed.quality > 0 && objCompressed.quality <= 1) {
+							quality = objCompressed.quality;
+						}
+
+						//生成canvas
+						var canvas = document.createElement('canvas');
+						var ctx = canvas.getContext('2d');
+						// 创建属性节点
+						var anw = document.createAttribute("width");
+						anw.nodeValue = w;
+						var anh = document.createAttribute("height");
+						anh.nodeValue = h;
+						canvas.setAttributeNode(anw);
+						canvas.setAttributeNode(anh);
+						ctx.drawImage(that, 0, 0, w, h);
+
+						var base64 = canvas.toDataURL('image/jpeg', quality);
+						// 回调函数返回base64的值
+						callback(base64);
+					}
+				}
+			});
+		</script>
+	</body>
+</html>

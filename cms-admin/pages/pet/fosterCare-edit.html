@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>编辑宠物服务</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../css/oksub.css">
+		<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+	</head>
+	<body>
+		<div class="ok-body">
+			<!--form表单-->
+			<form class="layui-form layui-form-pane ok-form" lay-filter="filter">
+				<div class="layui-form-item">
+					<label class="layui-form-label">宠物名</label>
+					<div class="layui-input-block">
+						<input type="text" name="petName" placeholder="请输入宠物名" autocomplete="off" class="layui-input" lay-verify="required">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">开始时间</label>
+					<div class="layui-input-block">
+						<input type="text" name="startTime" placeholder="请选择出开始时间" autocomplete="off" class="layui-input"
+						 id="startTime" lay-verify="startTimeVerify">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">结束时间</label>
+					<div class="layui-input-block">
+						<input type="text" name="endTime" placeholder="请选择出结束时间" autocomplete="off" class="layui-input"
+						 id="endTime" lay-verify="endTimeVerify">
+					</div>
+				</div>
+				
+				<div class="layui-form-item">
+					<label class="layui-form-label">费用/天</label>
+					<div class="layui-input-block">
+						<input type="text" name="price" placeholder="请输入费用" autocomplete="off" lay-verify="required" class="layui-input" onkeyup="value=value.replace(/^\D*(\d*(?:\.\d{0,2})?).*$/g, '$1')" >
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">联系人</label>
+					<div class="layui-input-block">
+						<input type="text" name="contactPerson" placeholder="请输入联系人" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">联系号码</label>
+					<div class="layui-input-block">
+						<input type="text" name="phoneNum" placeholder="请输入联系号码" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">备注</label>
+					<div class="layui-input-block">
+						<input type="text" name="remark" placeholder="请输入备注" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<div class="layui-input-block">
+						<button class="layui-btn" lay-submit lay-filter="add">立即提交</button>
+						<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		<!--js逻辑-->
+		<script src="../../lib/layui/layui.js"></script>
+		<script>
+			layui.use(["element", "form", "okLayer", "okUtils", 'jquery', "laydate"], function() {
+				let form = layui.form;
+				let okLayer = layui.okLayer;
+				let okUtils = layui.okUtils;
+				let laydate = layui.laydate;
+				let $ = layui.jquery;
+				var id = okUtils.requestParameter().id;
+
+				laydate.render({
+					elem: "#startTime",
+					type: "datetime"
+				});
+				laydate.render({
+					elem: "#endTime",
+					type: "datetime"
+				});
+				
+				form.verify({
+					startTimeVerify: [
+						/^((((1[6-9]|[2-9]\d)\d{2})-(0?[13578]|1[02])-(0?[1-9]|[12]\d|3[01]))|(((1[6-9]|[2-9]\d)\d{2})-(0?[13456789]|1[012])-(0?[1-9]|[12]\d|30))|(((1[6-9]|[2-9]\d)\d{2})-0?2-(0?[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-0?2-29-))(\s(([01]\d{1})|(2[0123])):([0-5]\d):([0-5]\d))?$/,
+						'日期格式不正确'
+					],
+					endTimeVerify: [
+						/^((((1[6-9]|[2-9]\d)\d{2})-(0?[13578]|1[02])-(0?[1-9]|[12]\d|3[01]))|(((1[6-9]|[2-9]\d)\d{2})-(0?[13456789]|1[012])-(0?[1-9]|[12]\d|30))|(((1[6-9]|[2-9]\d)\d{2})-0?2-(0?[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-0?2-29-))(\s(([01]\d{1})|(2[0123])):([0-5]\d):([0-5]\d))?$/,
+						'日期格式不正确'
+					]
+				});
+				
+				okUtils.ajax("/pet/fosterCare/getById?id="+id, "get", null).done(function(response) {
+					form.val("filter", response);
+				}).fail(function(error) {
+					console.log(error)
+					parent.layer.close(parent.layer.getFrameIndex(window.name));
+				});
+				okLoading.close();
+				
+				form.on("submit(add)", function(data) {
+					var fosterCareInfo = data.field;
+					fosterCareInfo.id = id;
+					okUtils.ajax("/pet/fosterCare/edit", "post",JSON.stringify(fosterCareInfo), true).done(function(response) {
+						okLayer.greenTickMsg("编辑成功", function() {
+							parent.layer.close(parent.layer.getFrameIndex(window.name));
+						});
+					}).fail(function(error) {
+						console.log(error)
+					});
+					return false;
+				});
+				
+			});
+		</script>
+	</body>
+</html>
