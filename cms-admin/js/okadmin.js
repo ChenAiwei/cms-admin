@@ -363,24 +363,23 @@ layui.use(["element", "form", "layer", "okUtils", "okTab", "okLayer", "okContext
 
       //提交密码
       form.on('submit(lockSubmit)', function (data) {
-         console.log(data);
-         if (data.field.lock_password !== "123456") {
-            layer.msg("密码不正确", {
-               icon: 5,
-               zIndex: 999999991
-            });
-         } else {
-            layer.msg("密码输入正确", {
-               icon: 6,
-               zIndex: 999999992,
-               end: function () {
-                  okUtils.local("isLock", null);   //清除锁屏的缓存
-                  $("#lockPassword").val("");   //清除输入框的密码
-                  $(".lock-screen").hide();
-                  clearInterval(lock_inter);
-               }
-            });
-         }
+		  okUtils.ajax("/shop/lock?pwd="+data.field.lock_password, "get", null).done(function(response) {
+		  	layer.msg("密码输入正确", {
+		  	   icon: 6,
+		  	   zIndex: 999999992,
+		  	   end: function () {
+		  	      okUtils.local("isLock", null);   //清除锁屏的缓存
+		  	      $("#lockPassword").val("");   //清除输入框的密码
+		  	      $(".lock-screen").hide();
+		  	      clearInterval(lock_inter);
+		  	   }
+		  	});
+		  }).fail(function(error) {
+		  	layer.msg("密码错误", {
+		  	   icon: 5,
+		  	   zIndex: 999999991
+		  	});
+		  });
          return false;
       });
 

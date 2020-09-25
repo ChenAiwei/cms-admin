@@ -69,10 +69,9 @@
 								<span name="userName"></span>
 							</a>
 							<dl id="userInfo" class="layui-nav-child">
-								<dd><a lay-id="u-1" href="javascript:" data-url="pages/member/user.html">个人中心<span class="layui-badge-dot"></span></a></dd>
-								<dd><a lay-id="u-2" href="javascript:" data-url="pages/member/user-info.html">基本资料</a></dd>
-								<dd><a lay-id="u-3" href="javascript:" data-url="pages/member/user-pwd.html">安全设置</a></dd>
-								<dd><a lay-id="u-4" href="javascript:" id="alertSkin">皮肤动画</a></dd>
+								<dd><a lay-id="u-2" href="javascript:" data-url="pages/system/user-pwd.html">基本资料</a></dd>
+								<dd><a lay-id="u-3" href="javascript:" id="shopSeting">店铺设置</a></dd>
+								<dd><a lay-id="u-4" href="javascript:" id="alertSkin">皮肤动画<span class="layui-badge-dot"></span></a></dd>
 								<dd>
 									<hr/>
 								</dd>
@@ -93,10 +92,10 @@
 				<!--左侧导航区域-->
 				<div class="layui-side layui-side-menu okadmin-bg-20222A ok-left">
 					<div class="layui-side-scroll okadmin-side">
-						<div class="okadmin-logo">CMS 管理系统</div>
+						<div class="okadmin-logo" id="shopName"></div>
 						<div class="user-photo">
 							<a class="img">
-								<img src="" class="layui-nav-img" name="userAvatar" id="userAvatarId">
+								<img class="layui-nav-img" name="userAvatar" id="userAvatarId">
 							</a> 
 							<p>你好！<span class="userName" name="userName"></span>, 欢迎登录</p>
 						</div>
@@ -205,13 +204,16 @@
 		<script src="js/vue.min.js"></script>
 
 		<script>
-			layui.use(["okUtils"], function() {
+			layui.use(["okUtils","okLayer","okLayx"], function() {
 				let $ = layui.jquery;
 				let okUtils = layui.okUtils;
+				let okLayer = layui.okLayer;
+				let okLayx = layui.okLayx;
 				let userId = $.cookie("userId");
 				if (userId == undefined) {
 					window.location = "../cms-admin/pages/login.html";
 				}
+				getShopName();
 				let userName = $.cookie("userName");
 				let avatar = $.cookie("avatar");
 				$("[name='userName']").html(userName);
@@ -234,6 +236,63 @@
 					}
 				})
 				
+				$("#shopSeting").click(function(){
+					okLayer.open("店铺设置", "pages/system/shop-setting.html", "30%", "40%", null, function () {
+						getShopName();
+					})
+				})
+				
+				function getShopName(){
+					okUtils.ajax("/shop/getShop", "get", null).done(function(response) {
+						var shopName = response.name;
+						$("#shopName").html(shopName);
+					}).fail(function(error) {
+						console.log(error)
+					});
+				}
+				
+				var websocket =  new WebSocket(okUtils.wsUrl+"/"+userId+"/"+$.cookie("token"));
+				// 连接发生错误的回调方法
+				websocket.onerror = function(){
+					console.log("发生错误");
+				};
+			
+				// 连接成功建立的回调方法
+				websocket.onopen = function(event){
+					console.log("打开连接");
+				}
+			
+				// 接收到消息的回调方法
+				websocket.onmessage = function(event){
+					var message = $.parseJSON(event.data)
+					if(message.needShow){
+						okLayx.notice({
+						    title: message.title,
+						    message: message.content
+						});
+					}
+				}
+			
+				// 连接关闭的回调方法
+				websocket.onclose = function(){
+					console.log("关闭连接");
+				}
+			
+				// 监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常
+				window.onbeforeunload = function(){
+					websocket.close();
+				}
+			
+			
+				// 关闭连接
+				function closeWebSocket(){
+					websocket.close();
+				}
+			
+				// 发送消息
+				function send(){
+				   // websocket.send(message);
+				}
 				/**
 				 * usernmae : 用户名 默认为无
 				 * size ：头像大小 默认为 30

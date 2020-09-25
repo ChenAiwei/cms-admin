@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>店铺设置</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../css/oksub.css">
+		<script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+	</head>
+	<body>
+		<div class="ok-body">
+			<!--form表单-->
+			<form class="layui-form layui-form-pane ok-form" lay-filter="filter">
+				<input type="hidden" name="id">
+				<div class="layui-form-item">
+					<label class="layui-form-label">店铺名</label>
+					<div class="layui-input-block">
+						<input type="text" name="name" placeholder="请输入店铺名" autocomplete="off" class="layui-input" lay-verify="required">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">店铺地址</label>
+					<div class="layui-input-block">
+						<input type="text" name="address" placeholder="请输入店铺地址" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">负责人</label>
+					<div class="layui-input-block">
+						<input type="text" name="concatName" placeholder="请输入负责人" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">联系号码</label>
+					<div class="layui-input-block">
+						<input type="text" name="concatPhone" placeholder="请输入联系号码" autocomplete="off" class="layui-input" onkeyup="value=value.replace(/[^\d]/g,'').replace(/^0{1,}/g,'')">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">锁屏密码</label>
+					<div class="layui-input-block">
+						<input type="password" name = "lockPassword" placeholder="请输入锁屏密码" lay-verify="pass"
+						       class="layui-input pwd">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<div class="layui-input-block">
+						<button class="layui-btn" lay-submit lay-filter="add">立即提交</button>
+						<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		<!--js逻辑-->
+		<script src="../../lib/layui/layui.js"></script>
+		<script>
+			layui.use(["element", "form", "okLayer", "okUtils", 'jquery'], function() {
+				let form = layui.form;
+				let okLayer = layui.okLayer;
+				let okUtils = layui.okUtils;
+				let $ = layui.jquery;
+				okUtils.ajax("/shop/getShop", "get", null).done(function(response) {
+					form.val("filter", response);
+				}).fail(function(error) {
+					console.log(error)
+					parent.layer.close(parent.layer.getFrameIndex(window.name));
+				});
+				okLoading.close();
+
+				form.on("submit(add)", function(data) {
+					var shopInfo = data.field;
+					okUtils.ajax("/shop/edit", "post", JSON.stringify(shopInfo), true).done(function(response) {
+						okLayer.greenTickMsg("编辑成功", function() {
+							parent.layer.close(parent.layer.getFrameIndex(window.name));
+						});
+					}).fail(function(error) {
+						console.log(error)
+					});
+					return false;
+				});
+
+			});
+		</script>
+	</body>
+</html>

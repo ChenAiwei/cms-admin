@@ -52,6 +52,10 @@ layui.define(["layer","okCookie"], function (exprots) {
        * 服务器地址
        */
       baseUrl: "http://127.0.0.1:8889",
+	  /**
+	   * 服务器websocket地址
+	   */
+	  wsUrl: "ws://127.0.0.1:8889/websocket",
       /**
        * 获取body的总宽度
        */
