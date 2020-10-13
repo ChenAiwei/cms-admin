@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <title>CMS</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+   <meta name="keywords" content="">
+   <meta name="description" content="">
+   <meta name="renderer" content="webkit">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+   <meta name="apple-mobile-web-app-status-bar-style" content="black">
+   <meta name="apple-mobile-web-app-capable" content="yes">
+   <meta name="format-detection" content="telephone=no">
+   <link rel="stylesheet" href="../../css/oksub.css" media="all"/>
+   <script type="text/javascript" src="../../lib/loading/okLoading.js"></script>
+   <script type="text/javascript" src="../../lib/echarts/echarts.min.js"></script>
+   <script type="text/javascript" src="../../lib/echarts/echarts.themez.js"></script>
+</head>
+<body class="console console1 ok-body-scroll">
+<div class="ok-body home">
+   <div class="layui-row layui-col-space15">
+      <div class="layui-col-md12">
+         <div class="layui-card">
+            <div class="layui-card-header">
+               <div class="ok-card-title">店铺利润日统计</div>
+            </div>
+            <div class="ok-card-body clearfix">
+               <div class="map-china" id="saleWeekChart"></div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+</body>
+</html>
+<script src="../../lib/layui/layui.js"></script>
+<script>
+	layui.use(["okUtils"], function () {
+	    var okUtils = layui.okUtils;
+	    var $ = layui.jquery;
+		okUtils.ajax("/statics/dayOfView?date="+new Date().toLocaleDateString().split('/').join('-'), "get", null).done(function(response) {
+			var saleWeekChartOption = {
+			    title: {show: true, text: ''},
+			    tooltip: {trigger: 'axis', axisPointer: {type: 'cross', label: {backgroundColor: '#6a7985'}}},
+			    legend: {data: response.legend},
+			    toolbox: {show: false, feature: {saveAsImage: {}}},
+			    grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
+			    xAxis: [{type: 'category', boundaryGap: false, data: response.xaxis}],
+			    yAxis: [{type: 'value', splitLine: {show: false},}],
+			    series: response.series
+			};
+			var saleWeekChart = echarts.init($("#saleWeekChart")[0], "themez");
+			saleWeekChart.setOption(saleWeekChartOption);
+			okUtils.echartsResize([saleWeekChart]);
+		}).fail(function(error) {
+			console.log(error)
+		});
+	    okLoading.close();
+	});
+	
+	
+	
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
