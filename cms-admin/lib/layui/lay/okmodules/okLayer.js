@@ -23,7 +23,7 @@ layui.define(["layer"], function (exports) {
             let currentIndex = layer.open({
                 title: title,
                 type: 2,
-                maxmin: true,
+                maxmin: okLayer.device(),
                 shade: 0.5,
                 anim: okLayer.animChoose(),
                 area: [width, height],
@@ -126,6 +126,21 @@ layui.define(["layer"], function (exports) {
 			if (!flag) {
 				layer.full(index);
 			}
+		},
+		/**
+		 * 最大化最小化按钮
+		 */
+		device: function(){
+			var userAgentInfo = navigator.userAgent;
+			var Agents = ["Android", "iPhone","SymbianOS", "Windows Phone","iPod"];
+			var flag = true;
+			for (var v = 0; v < Agents.length; v++) {
+				if (userAgentInfo.indexOf(Agents[v]) > 0) {
+					flag = false;
+					break;
+				}
+			}
+			return flag;
 		}
     }
     exports("okLayer", okLayer);
