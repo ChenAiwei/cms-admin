@@ -115,7 +115,7 @@ layui.define(["layer"], function (exports) {
 		 */
 		isPc: function(index){
 			if (!okLayer.device()) {
-				layer.full(index);
+				layer.full(index); 
 			}
 		},
 		/**
