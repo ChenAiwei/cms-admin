@@ -130,7 +130,7 @@
 						selectRoleIds.push(val.value);
 					});
 					userInfo.roleIdLits = selectRoleIds;
-					userInfo.status = (userInfo.status == 'on' ? "1":"0");
+					userInfo.status = (userInfo.status == 'on' ? true:false);
 					userInfo.uid = id;
 					okUtils.ajax("/user/editUser", "post",JSON.stringify(userInfo), true).done(function(response) {
 						okLayer.greenTickMsg("编辑成功", function() {

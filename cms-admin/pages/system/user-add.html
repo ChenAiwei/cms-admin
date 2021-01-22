@@ -124,7 +124,7 @@
 						selectRoleIds.push(val.value);
 					});
 					userInfo.roleIdLits = selectRoleIds;
-					userInfo.status = (userInfo.status == 'on' ? "1":"0");
+					userInfo.status = (userInfo.status == 'on' ? true:false);
 					okUtils.ajax("/user/addUser", "post",JSON.stringify(userInfo), true).done(function(response) {
 						okLayer.greenTickMsg("添加成功", function() {
 							parent.layer.close(parent.layer.getFrameIndex(window.name));
